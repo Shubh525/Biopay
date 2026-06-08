@@ -1,0 +1,80 @@
+.services-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.services-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6);
+  z-index: -1;
+}
+
+.services-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 100px 20px;
+  color: #fff;
+}
+
+.services-content {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 950px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+}
+
+.services-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #00ffcc;
+}
+
+.services-subtitle {
+  font-size: 16px;
+  color: #d0d0d0;
+  margin-bottom: 30px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+.service-card {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  transform: scale(1.05);
+  background: rgba(0, 255, 204, 0.15);
+}
+
+.service-card h3 {
+  color: #00ffcc;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.service-card p {
+  color: #e5e5e5;
+  font-size: 14px;
+}

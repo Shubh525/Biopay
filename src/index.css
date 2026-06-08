@@ -1,0 +1,10 @@
+
+html {
+  scroll-behavior: auto !important;
+}
+
+
+html, body {
+  height: auto;
+  overflow: auto;
+}

@@ -1,0 +1,168 @@
+
+.homepage-container {
+  background-color: #f4fdff;
+  min-height: 100dvh; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+
+.homepage-wrapper {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row; 
+  justify-content: space-between;
+  align-items: center;
+  gap: 4rem;
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+
+.with-divider {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.vertical-divider {
+  width: 1px;
+  height: 60%;
+  background-color: #ccc;
+  margin: 0 2rem;
+}
+
+
+@media (max-width: 767px) {
+  .vertical-divider {
+    display: none;
+  }
+}
+
+
+.homepage-image-section,
+.homepage-text-section {
+  flex: 1 1 100%;
+  text-align: center;
+}
+
+.front-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.homepage-text-section {
+  padding: 0 1rem;
+}
+
+
+.homepage-heading {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #000306;
+  line-height: 1.3;
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+@media (min-width: 768px) {
+  .homepage-image-section,
+  .homepage-text-section {
+    flex: 1;
+  }
+
+  .homepage-heading {
+    font-size: 3.5rem;
+    text-align: left;
+  }
+
+  .homepage-text-section {
+    text-align: left;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .homepage-wrapper {
+    flex-direction: column; 
+    gap: 3rem;
+    padding: 2rem 1rem;
+  }
+
+  .front-image {
+    max-width: 70%;
+    margin: 0 auto;
+  }
+
+  .homepage-heading {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+
+  .homepage-text-section {
+    text-align: center;
+  }
+}
+
+
+.highlight-green {
+  color: #157667;
+  font-weight: 800;
+}
+
+
+.homepage-button {
+  background-color: #157667;
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.homepage-button:hover {
+  background-color: #116352;
+}
+
+
+.homepage-footer {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 1rem;
+  background-color: #e6f4f5;
+  font-size: 0.9rem;
+  color: #333;
+  width: 100%;
+}
+
+.front-image {
+  width: 100%;
+  max-width: 400px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Other styles can remain unchanged */

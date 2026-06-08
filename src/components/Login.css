@@ -1,0 +1,202 @@
+/* === Base Layout === */
+.login-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.login-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 17vh;
+  z-index: 1;
+}
+
+/* === Login Card === */
+.login-card {
+  background: rgba(0, 0, 0, 0.285);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 50px;
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: slideUp 2s ease;
+  color: #ffffff;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* === Form Elements === */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper input {
+  width: 100%;
+  padding-right: 60px; /* leave space for the Show button */
+  border-radius: 8px;
+  z-index: 1;
+}
+.password-wrapper span {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  z-index: 2; /* ensures click works */
+  user-select: none;
+}
+
+
+/* Primary Login Button */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #e5e5e5;
+}
+
+
+/* === GOOGLE CUSTOM BUTTON === */
+.google-wrapper {
+  width: 100%;
+  height: 50px;
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;                      /* space between icon & text */
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Google icon */
+.google-wrapper .google-icon {
+  width: 28px;
+  pointer-events: none;          /* never blocks click */
+}
+
+/* Google Text */
+.google-wrapper .google-text {
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  pointer-events: none;          /* never blocks click */
+}
+
+/* Invisible REAL Google button */
+#googleBtn {
+  position: absolute;
+  inset: 0;                       /* fills the wrapper */
+  opacity: 0;                     /* invisible */
+  pointer-events: auto;           /* receives click to open popup */
+}
+
+#googleBtn iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hover effect */
+.google-wrapper:hover {
+  background: rgba(255, 255, 255, 0.20);
+  transform: scale(1.02);
+  transition: 0.25s;
+}
+
+
+/* === Register Link === */
+.register-link {
+  text-align: center;
+  margin-top: 15px;
+  color: #fff;
+}
+
+.register-link a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+
+/* === Responsive === */
+@media screen and (max-width: 957px) {
+  .login-card { padding: 30px 20px; }
+}
+
+@media screen and (max-width: 760px) {
+  .login-overlay { padding-top: 5vh; }
+  .login-card {
+    background: rgba(142, 142, 142, 0.6);
+    box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2);
+  }
+}
+
+.welcome-text {
+  color: #ffffff;
+}

@@ -1,0 +1,236 @@
+/* === Base Layout === */
+/* === Base Layout === */
+.register-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* ✅ allows page to grow dynamically */
+  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.register-background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* === Overlay Fix === */
+.register-overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 18vh; /* ✅ pushes the card further down under navbar */
+  padding-bottom: 1vh; /* ✅ adds bottom breathing space */
+}
+
+
+
+/* === Register Card === */
+.register-card {
+  background: rgba(0, 0, 0, 0.285);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 50px;
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  animation: slideUp 2s ease;
+  z-index: 2;
+  margin-bottom: 40px;
+}
+
+/* === Form === */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/* === Password Toggle === */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper span {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+/* === Buttons === */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #e5e5e5;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+}
+
+.btn-google:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* === Register Link === */
+.register-link {
+  text-align: center;
+  margin-top: 15px;
+  color: #fff;
+}
+
+.register-link a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+/* === BioID Wrapper === */
+.bioid-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bioid-wrapper input {
+  flex: 1;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+/* === Scan Button === */
+/* === BioID Wrapper (Fixed for Clickability) === */
+.bioid-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bioid-wrapper input {
+  flex: 1;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  z-index: 1;
+}
+
+/* === Scan Button (Clickable + Styled) === */
+.btn-scan {
+  padding: 10px 14px;
+  background-color: #ffffff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  z-index: 2; /* ensure button sits above input */
+}
+
+.btn-scan:hover {
+  background-color: #e5e5e5;
+}
+
+.btn-scan:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+/* === Headings === */
+.create-account-text {
+  color: #ffffff;
+  font-size: 33px;
+}
+input {
+  color: #fff !important;
+}
+
+/* === Animation === */
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* === Responsive === */
+@media screen and (max-width: 957px) {
+  .register-card {
+    padding: 30px 20px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .register-overlay {
+    padding-top: 8vh;  /* slightly less space on phones */
+    padding-bottom: 3vh;
+  }
+
+  .register-card {
+    background: rgba(142, 142, 142, 0.6);
+    box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2);
+  }
+}

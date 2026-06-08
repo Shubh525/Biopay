@@ -1,0 +1,452 @@
+.bunsen-footer {
+  position: relative;
+  background-color: #0d0d0d;
+  color: white;
+  padding: 100px 200px;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 0;
+}
+
+.bunsen-footer * {
+  z-index: 1;
+}
+
+.cta-section {
+  text-align: center;
+  padding: 10rem 20rem;
+}
+
+.cta-section h2 {
+  font-size: 4.5rem;
+  font-weight: 700;
+  margin-bottom: 8rem;
+  line-height: 1.2;
+  padding-bottom: 1rem;
+}
+
+.cta-button {
+  background: #000;
+  color: #fff;
+  padding: 1.4rem 4rem;
+  font-size: 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  animation: floatButton 4s ease-in-out infinite;
+  transition: background 0.9s ease, color 0.6s ease, box-shadow 0.9s ease;
+}
+
+.cta-button:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes floatButton {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.footer-main {
+  padding: 1.5rem;
+}
+
+.footer-top-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.footer-logo h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.footer-columns {
+  display: flex;
+  gap: 10rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-col h4 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.footer-col ul li {
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.footer-col ul li:hover {
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.footer-bottom p {
+  margin: 0.5rem 0;
+}
+
+.footer-links a {
+  color: white;
+  margin: 0 0.75rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #aaa;
+  text-decoration: underline;
+}
+
+.footer-bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(150px);
+  opacity: 0;
+  z-index: -1;
+  mix-blend-mode: screen;
+  animation: float-smooth 30s ease-in-out infinite alternate, glowPulse 2s ease-in-out infinite;
+  transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+  box-shadow: 0 0 100px rgba(255, 255, 255, 0.1);
+  will-change: transform;
+  transform: scale(0.8);
+}
+
+.bunsen-footer.visible .footer-bg-blob {
+  opacity: 0.35;
+  transform: scale(1);
+}
+
+.footer-bg-blob:hover {
+  transform: scale(1.15);
+  opacity: 0.6;
+  box-shadow: 0 0 150px rgba(255, 255, 255, 0.4);
+}
+
+/* Individual Blobs */
+.blob-1 { width: 320px; height: 320px; background: #ff00ff; bottom: -60px; left: -100px; animation-delay: 1s; }
+.blob-2 { width: 300px; height: 300px; background: #00ffff; bottom: -50px; right: -80px; animation-delay: 1s; }
+.blob-3 { width: 400px; height: 400px; background: #354dea; bottom: -100px; left: 25%; animation-delay: 3s; }
+.blob-4 { width: 400px; height: 300px; background: #ff4d00; bottom: -100px; right: 500px; animation-delay: 3s; }
+.blob-5 { width: 250px; height: 250px; background: #3ae986; bottom: 250px; left: 300px; animation-delay: 2s; }
+.blob-6 { width: 250px; height: 250px; background: #0099ff; bottom: 350px; right: -200px; animation-delay: 0s; }
+.blob-7 { width: 300px; height: 300px; background: #ac13f3; bottom: 200px; right: 150px; animation-delay: 2s; }
+.blob-8 { width: 300px; height: 300px; background: #ff66c4; bottom: 300px; right: 90%; animation-delay: 0s; }
+
+@keyframes float-smooth {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(20px, -10px) scale(1.06); }
+  50% { transform: translate(-25px, 20px) scale(1.1); }
+  75% { transform: translate(10px, -5px) scale(1.04); }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 60px 20px rgba(255, 255, 255, 0.2);
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 100px 30px rgba(255, 255, 255, 0.35);
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.floating-text {
+  animation: subtleFloat 4s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes subtleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.wave-svg {
+  display: block;
+  width: 100vw;
+  height: auto;
+  transform: translateY(1px);
+}
+
+.plain-heading {
+  font-size: 6rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.02em;
+  color: white;
+}
+
+.solid-text {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.bunsen-footer hr {
+  display: none;
+  border: none;
+}
+
+/* ---------------------------------- */
+/* 🌐 Responsive Design Enhancements */
+/* ---------------------------------- */
+
+.bunsen-footer {
+  position: relative;
+  background-color: #0d0d0d;
+  color: white;
+  padding: 100px 200px;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 0;
+}
+
+.bunsen-footer * {
+  z-index: 1;
+  color: white; /* Ensure all nested elements have white text */
+}
+
+.cta-section {
+  text-align: center;
+  padding: 10rem 20rem;
+}
+
+.cta-section h2 {
+  font-size: 4.5rem;
+  font-weight: 700;
+  margin-bottom: 8rem;
+  line-height: 1.2;
+  padding-bottom: 1rem;
+  color: white;
+}
+
+.cta-button {
+  background: #000;
+  color: #fff;
+  padding: 1.4rem 4rem;
+  font-size: 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  animation: floatButton 4s ease-in-out infinite;
+  transition: background 0.9s ease, color 0.6s ease, box-shadow 0.9s ease;
+}
+
+.cta-button:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes floatButton {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.footer-main {
+  padding: 1.5rem;
+}
+
+.footer-top-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.footer-logo h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.footer-columns {
+  display: flex;
+  gap: 10rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: white;
+}
+
+.footer-col h4 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.footer-col ul li {
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  color: white;
+}
+
+.footer-col ul li:hover {
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.footer-bottom p {
+  margin: 0.5rem 0;
+  color: white;
+}
+
+.footer-links a {
+  color: white !important;
+  margin: 0 0.75rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #aaa;
+  text-decoration: underline;
+}
+
+/* ---------------------- */
+/* 🌐 Responsive Design  */
+/* ---------------------- */
+
+@media (max-width: 1200px) {
+  .bunsen-footer {
+    padding: 80px 100px;
+  }
+
+  .cta-section {
+    padding: 6rem 10rem;
+  }
+
+  .footer-columns {
+    gap: 5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .bunsen-footer {
+    padding: 60px 40px;
+  }
+
+  .cta-section {
+    padding: 4rem 2rem;
+  }
+
+  .cta-section h2 {
+    font-size: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .cta-button {
+    font-size: 1rem;
+    padding: 1rem 3rem;
+  }
+
+  .footer-columns {
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .footer-logo h1 {
+    font-size: 2rem;
+  }
+
+  .footer-links a {
+    display: inline-block;
+    margin: 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-section h2 {
+    font-size: 2.4rem;
+  }
+
+  .cta-button {
+    font-size: 0.9rem;
+    padding: 0.8rem 2.2rem;
+  }
+
+  .plain-heading {
+    font-size: 3.5rem;
+  }
+
+  .solid-text {
+    font-size: 2rem;
+  }
+
+  .footer-columns {
+    gap: 2rem;
+  }
+
+  .footer-logo h1 {
+    font-size: 1.8rem;
+  }
+
+  .footer-links a {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .cta-button {
+    font-size: 1.1rem;
+    padding: 1.2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cta-button {
+    font-size: 1rem;
+    padding: 1rem 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-button {
+    font-size: 0.95rem;
+    padding: 0.9rem 2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .cta-button {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.6rem;
+  }
+}
