@@ -25,3 +25,5 @@ dist-ssr
 
 # Large media files (exceeds GitHub 100 MB limit)
 public/About-us/landscape.mp4
+
+.env
