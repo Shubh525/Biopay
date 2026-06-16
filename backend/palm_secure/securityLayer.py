@@ -10,7 +10,13 @@ from cryptography.hazmat.primitives import padding
 class PalmVeinPaymentEncryption:
     def __init__(self, key=None):
         if key is None:
-            key = os.getenv('PALM_AUTH_AES_KEY', 'palm_vein_default_key_2025')
+            key = os.getenv('PALM_AUTH_AES_KEY')
+        
+        if not key:
+            raise RuntimeError(
+                "PALM_AUTH_AES_KEY environment variable is not set. "
+                "This key protects all stored biometric data and must never have a default value."
+            )
         
         # Create consistent 256-bit key from string
         if isinstance(key, str):
@@ -102,7 +108,12 @@ class AESEncryption:
     def __init__(self, key=None):
         """Initialize AES encryption with a consistent key"""
         if key is None:
-            key_source = os.getenv('PALM_AUTH_AES_KEY', 'palm_vein_default_key_2025')
+            key_source = os.getenv('PALM_AUTH_AES_KEY')
+            if not key_source:
+                raise RuntimeError(
+                    "PALM_AUTH_AES_KEY environment variable is not set. "
+                    "This key protects all stored biometric data and must never have a default value."
+                )
             self.key = hashlib.sha256(key_source.encode('utf-8')).digest()
         else:
             if isinstance(key, str):

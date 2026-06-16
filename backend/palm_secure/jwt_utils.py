@@ -1,7 +1,13 @@
+import os
 import jwt
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
-SECRET_KEY = "token"
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable is not set. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
 
 def generate_token(user_data, expires_in=3600):
     payload = {
