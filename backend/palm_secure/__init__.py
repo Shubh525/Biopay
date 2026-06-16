@@ -7,7 +7,7 @@ This package provides a Python SDK for interfacing with Fujitsu PalmSecure biome
 Classes:
     PalmSecureDevice: Main interface for interacting with PalmSecure devices.
     DeviceNotFoundError: Exception raised when a device can't be found.
-    ConnectionError: Exception raised when connection to a device fails.
+    DeviceConnectionError: Exception raised when connection to a device fails.
     OperationError: Exception raised when a device operation fails.
 
 Functions:
@@ -16,8 +16,14 @@ Functions:
 """
 
 from .device import PalmSecureDevice, find_devices
-from .exceptions import DeviceNotFoundError, ConnectionError, OperationError
+from .exceptions import (
+    DeviceNotFoundError,
+    DeviceConnectionError,
+    ConnectionError,      # backward-compat alias (shadows builtin)
+    OperationError,
+)
 from .diagnostics import DiagnosticsManager
+
 
 __version__ = "0.1.0"
 
