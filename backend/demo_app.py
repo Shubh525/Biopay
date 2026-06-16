@@ -75,6 +75,8 @@ app_state = {
     "backend_available": True,
 }
 
+otp_store = {}
+
 # api for extract bio id of new user 
 @app.route("/api/scan_bio_id", methods=["GET", "POST"])
 def scan_bio_id():
@@ -587,6 +589,18 @@ def verify_otp():
     if not otp:
         return jsonify({"status": "error", "message": "OTP is required"}), 400
     
+    # Resolve email from phone if email is missing but phone is provided
+    if phone and not email:
+        session = SessionLocal()
+        try:
+            user = session.query(User).filter_by(phone=phone).first()
+            if user:
+                email = user.email
+        except Exception as e:
+            logger.error(f"Error finding user by phone for OTP verification: {e}")
+        finally:
+            session.close()
+            
     key = email or phone
     if not key or key not in otp_store:
         return jsonify({"status": "error", "message": "No OTP sent to this user"}), 404

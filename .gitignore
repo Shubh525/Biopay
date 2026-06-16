@@ -25,3 +25,11 @@ dist-ssr
 
 # Large media files (exceeds GitHub 100 MB limit)
 public/About-us/landscape.mp4
+
+# Environment variables
+.env
+backend/.env
+
+__pycache__/
+*.pyc
+*.db
