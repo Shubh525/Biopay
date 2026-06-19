@@ -1,58 +1,76 @@
-import React from "react";
+import React, { memo } from "react";
 import "./Services.css";
 import bgVideo from "../assets/images/login.mp4";
 
 const Services = () => {
   return (
-    <div className="services-container">
-      <video className="services-background" autoPlay loop muted playsInline>
+    <main className="services-container" aria-labelledby="services-heading">
+      <video
+        className="services-background"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        disablePictureInPicture
+        tabIndex={-1}
+        aria-hidden="true"
+        onError={() => {
+          if (import.meta.env.DEV) {
+            console.error("Services video failed to load");
+          }
+        }}
+      >
         <source src={bgVideo} type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
 
       <div className="services-overlay">
         <div className="services-content">
-          <h1 className="services-title">Our Services</h1>
+          <h1 id="services-heading" className="services-title">
+            Our Services
+          </h1>
           <p className="services-subtitle">
             BioPay combines biometric authentication with secure digital payments.
           </p>
 
-          <div className="services-grid">
-            <div className="service-card">
+          <div className="services-grid" role="list">
+            <article className="service-card" role="listitem">
               <h3>🔐 Biometric Authentication</h3>
               <p>
                 Secure access using Fujitsu PalmSecure sensors with advanced AES encryption and
                 real-time verification.
               </p>
-            </div>
+            </article>
 
-            <div className="service-card">
+            <article className="service-card" role="listitem">
               <h3>💳 Contactless Payments</h3>
               <p>
                 Enable instant, touch-free transactions using your palm as a unique identifier —
                 no cards or phones required.
               </p>
-            </div>
+            </article>
 
-            <div className="service-card">
+            <article className="service-card" role="listitem">
               <h3>📊 Analytics Dashboard</h3>
               <p>
                 View transaction insights, user authentication stats, and live performance
                 metrics through our secure web dashboard.
               </p>
-            </div>
+            </article>
 
-            <div className="service-card">
+            <article className="service-card" role="listitem">
               <h3>🧠 AI-Powered Fraud Detection</h3>
               <p>
                 Detect unusual behavior and prevent fraudulent activity using machine learning
                 integrated into every scan.
               </p>
-            </div>
+            </article>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
-export default Services;
+export default memo(Services);

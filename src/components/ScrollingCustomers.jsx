@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, memo, useCallback } from 'react';
 import './ScrollingCustomers.css';
 
 const customers = [
@@ -39,10 +39,22 @@ const customers = [
   },
 ];
 
+customers.forEach(Object.freeze);
+Object.freeze(customers);
+
 function ScrollingCustomers() {
   const [hovered, setHovered] = useState(null);
 
-  const tripled = [...customers, ...customers, ...customers];
+  const handleEnter = useCallback((id) => setHovered(id), []);
+  const handleLeave = useCallback(() => setHovered(null), []);
+  const handleTouchStart = useCallback((id) => {
+    setHovered((prev) => (prev === id ? null : id));
+  }, []);
+
+  const tripled = useMemo(
+    () => [...customers, ...customers, ...customers],
+    []
+  );
 
   return (
     <div className="scroll-container">
@@ -53,30 +65,68 @@ function ScrollingCustomers() {
 
       <div className="scroll-wrapper">
         <div className="scroll-track">
-          {tripled.map((customer, index) => (
-            <div className="customer-wrapper" key={`${customer.id}-${index}`}>
-              <div
-                className={`customer-card ${
-                  hovered === `${customer.id}-${index}` ? 'active' : ''
-                }`}
-                onMouseEnter={() => setHovered(`${customer.id}-${index}`)}
-                onMouseLeave={() => setHovered(null)}
-              >
-                <img src={customer.image} alt={customer.name} />
-                <div className="customer-info">
-                  <strong>{customer.name}</strong>
-                  <p>{customer.role}</p>
-                  {hovered === `${customer.id}-${index}` && (
-                    <div className="description">{customer.description}</div>
-                  )}
+          {tripled.map((customer, index) => {
+            const cardId = `${customer.id}-${index}`;
+            const isActive = hovered === cardId;
+
+            return (
+              <div className="customer-wrapper" key={cardId}>
+                <div
+                  className={`customer-card ${isActive ? 'active' : ''}`}
+                  onMouseEnter={() => handleEnter(cardId)}
+                  onMouseLeave={handleLeave}
+                  onTouchStart={() => handleTouchStart(cardId)}
+                  onTouchEnd={handleLeave}
+                  onFocus={() => handleEnter(cardId)}
+                  onBlur={handleLeave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setHovered((prev) => (prev === cardId ? null : cardId));
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-expanded={isActive}
+                  aria-label={`${customer.name} - ${customer.role}`}
+                >
+                  <img
+                    src={customer.image}
+                    alt={customer.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      if (
+                        e.currentTarget.dataset.fallbackLoaded ===
+                        'true'
+                      ) {
+                        e.currentTarget.parentElement?.classList.add(
+                          'image-failed'
+                        );
+                        return;
+                      }
+
+                      e.currentTarget.dataset.fallbackLoaded = 'true';
+                      e.currentTarget.src = '/customers/fallback.jpg';
+                    }}
+                  />
+                  <div className="customer-info">
+                    <strong>{customer.name}</strong>
+                    <p>{customer.role}</p>
+                    {isActive && (
+                      <div className="description visible">
+                        {customer.description}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-export default ScrollingCustomers;
+export default memo(ScrollingCustomers);

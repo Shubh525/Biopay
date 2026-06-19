@@ -5,14 +5,30 @@ import videoBg from '../assets/images/thru.mp4';
 const HeroVideoMask = () => {
   return (
     <div className="hero-wrapper">
-      <video className="hero-video" autoPlay loop muted playsInline>
+      <video
+        className="hero-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        onError={() => {
+          console.error("Video failed to load");
+        }}
+      >
         <source src={videoBg} type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
 
       <div className="video-overlay" />
 
       <div className="video-text-mask">
-        <h1 className="mask-text">BIOPAY</h1>
+        <h1
+          className="mask-text"
+          aria-label="BIOPAY"
+        >
+          BIOPAY
+        </h1>
       </div>
     </div>
   );

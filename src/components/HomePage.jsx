@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion'; // ✅ Import Framer Motion
+import { motion } from 'framer-motion'; //  Import Framer Motion
 import './HomePage.css';
 
 function HomePage() {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     navigate('/login');
-  };
+  }, [navigate]);
 
   return (
     <motion.div
@@ -22,14 +22,36 @@ function HomePage() {
         {/* Animated Image */}
         <motion.div
           className="homepage-image-section"
+          aria-hidden="true"
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: [0, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
+
+
+
         >
           <img
             src="/images/front.png"
-            alt="Front Visual"
+            alt="BioPay Homepage Illustration"
             className="front-image"
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+            onError={(e) => {
+              console.error("front.png failed to load");
+
+              if (e.currentTarget.src.includes("fallback.png")) {
+                e.currentTarget.style.display = "none";
+                return;
+              }
+
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/images/fallback.png";
+            }}
           />
         </motion.div>
 
@@ -55,7 +77,9 @@ function HomePage() {
           </h1>
 
           <motion.button
+            type="button"
             className="homepage-button"
+            aria-label="Start BioPay Journey"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleClick}
