@@ -50,22 +50,26 @@ warnings.filterwarnings("ignore")
 # Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", os.urandom(24).hex())
-# CORS(app)
+
+ALLOWED_ORIGINS = [
+    os.environ.get("FRONTEND_URL", "http://localhost:5173"),
+    "http://127.0.0.1:5173",
+]
+
 CORS(
     app,
     resources={r"/api/*": {
-        "origins": ["http://localhost:5173", "http://127.0.0.1:5173"]
+        "origins": ALLOWED_ORIGINS
     }},
     supports_credentials=True
 )
 
 # Realtime, rate limiting
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins=ALLOWED_ORIGINS)
 limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 
 
-PALM_AUTH_KEY = os.getenv('PALM_AUTH_AES_KEY', 'palm_vein_default_key_2025')
-encryption_layer = PalmVeinPaymentEncryption(PALM_AUTH_KEY)
+encryption_layer = PalmVeinPaymentEncryption()
 
 app_state = {
     "devices": [],

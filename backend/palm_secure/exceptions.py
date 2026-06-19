@@ -3,6 +3,10 @@ Palm Secure SDK Exceptions
 ==========================
 
 This module contains custom exceptions for the PalmSecure SDK.
+
+NOTE: The original class names ConnectionError, TimeoutError, and PermissionError
+shadow Python builtins. They are kept as aliases for backward compatibility
+(device.py uses them extensively), but new code should use the Device* prefixed names.
 """
 
 
@@ -11,9 +15,13 @@ class DeviceNotFoundError(Exception):
     pass
 
 
-class ConnectionError(Exception):
+class DeviceConnectionError(Exception):
     """Exception raised when there is an error connecting to a device."""
     pass
+
+
+# Backward-compatible alias — shadows the builtin, but device.py depends on this name.
+ConnectionError = DeviceConnectionError
 
 
 class OperationError(Exception):
@@ -26,9 +34,13 @@ class InitializationError(Exception):
     pass
 
 
-class TimeoutError(Exception):
+class DeviceTimeoutError(Exception):
     """Exception raised when a device operation times out."""
     pass
+
+
+# Backward-compatible alias — shadows the builtin, but device.py depends on this name.
+TimeoutError = DeviceTimeoutError
 
 
 class DriverCompatibilityError(Exception):
@@ -41,6 +53,10 @@ class FirmwareError(Exception):
     pass
 
 
-class PermissionError(Exception):
+class DevicePermissionError(Exception):
     """Exception raised when there is insufficient permissions to access the device."""
     pass
+
+
+# Backward-compatible alias — shadows the builtin, but kept for compatibility.
+PermissionError = DevicePermissionError

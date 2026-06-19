@@ -26,4 +26,14 @@ dist-ssr
 # Large media files (exceeds GitHub 100 MB limit)
 public/About-us/landscape.mp4
 
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+*.pyo
+
+# Environment — never commit real secrets
+backend/.env
+.env
 .env

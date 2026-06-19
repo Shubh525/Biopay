@@ -1,16 +1,19 @@
 """
-PalmSecure SDK Demo Web Application - Main Entry Point
+BioPay Backend — Entry Point
 
-This file serves as the entry point for the Flask web application.
+Run with:
+    python main.py                    (development)
+    eventlet wsgi main:app            (production — single worker)
+    gunicorn -k eventlet -w 1 main:app (production — gunicorn)
 """
 
-from demo_app import socketio, app
-import eventlet
-eventlet.monkey_patch()
-from palm_secure.db import init_db
 import socket
+from app import create_app
+from app.extensions import socketio
+from palm_secure.db import init_db
 
-def get_local_ip():
+
+def get_local_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect(("8.8.8.8", 80))
@@ -18,14 +21,22 @@ def get_local_ip():
     finally:
         s.close()
 
+
+# Module-level app so gunicorn can find it as `main:app`
+app = create_app()
+
+
 if __name__ == "__main__":
-    local_ip = get_local_ip()
+    import os
+    import sys
+
     init_db()
+
+    local_ip = get_local_ip()
     print(f"\nServer is running!")
     print(f"Access it on:")
     print(f"   • Localhost  →  http://127.0.0.1:5000")
     print(f"   • Network    →  http://{local_ip}:5000\n")
 
-    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
-
-
+    port = int(os.getenv("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port, debug=False)
