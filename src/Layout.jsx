@@ -7,18 +7,19 @@ const Layout = () => {
   const location = useLocation();
 
   useEffect(() => {
- 
-    if (location.pathname === '/' && location.state?.scrollToTop) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'auto' });
+    if (typeof window !== 'undefined') {
+      if (location.pathname === '/' && location.state?.scrollToTop) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
     }
-  }, [location]);
+  }, [location.pathname, location.state]);
 
   return (
     <>
       <NavBar />
-      <main>
+      <main id="main-content">
         <Outlet />
       </main>
       <Footer />

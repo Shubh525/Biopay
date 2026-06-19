@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import "./ContactUs.css";
+import teamPhoto from "../assets/images/17263.jpg";
 
 export default function ContactUs() {
   const [isVisible, setIsVisible] = useState({
@@ -21,30 +22,82 @@ export default function ContactUs() {
     const observerCallback = (entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setIsVisible(prev => ({
-            ...prev,
-            [entry.target.dataset.section]: true
-          }));
+          const section = entry.target.dataset.section;
+
+          if (section) {
+            setIsVisible(prev => ({
+              ...prev,
+              [section]: true
+            }));
+          }
         }
       });
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    
+    if (!window.IntersectionObserver) return;
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
     const sections = document.querySelectorAll('[data-section]');
     sections.forEach(section => observer.observe(section));
 
-    return () => observer.disconnect();
+    return () => {
+      sections.forEach(section => {
+        observer.unobserve(section);
+      });
+
+      observer.disconnect();
+    };
   }, []);
 
 
   const [focusedInput, setFocusedInput] = useState(null);
 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      console.log(formData);
+
+      alert("Message sent successfully!");
+
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+
+    } catch (error) {
+      console.error(error);
+
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
+
     <div className="contact-us-page">
-      
-      <section 
-        className={`hero-section ${isVisible.hero ? 'visible' : ''}`} 
+
+      <section
+        className={`hero-section ${isVisible.hero ? 'visible' : ''}`}
         data-section="hero"
       >
         <div className="container">
@@ -72,18 +125,20 @@ export default function ContactUs() {
 
             <div className="hero-image">
               <img
-                src="/contact-us/team-photo.jpg"
+                src={teamPhoto}
                 alt="Contact BioPay team"
                 className="hero-img"
+                loading="lazy"
+                decoding="async"
               />
-              
+
             </div>
           </div>
         </div>
       </section>
 
-     
-      <section 
+
+      <section
         className={`contact-form-section ${isVisible.form ? 'visible' : ''}`}
         data-section="form"
       >
@@ -91,7 +146,9 @@ export default function ContactUs() {
           <h2 className="section-title">Send Us A Message</h2>
           <div className="contact-container">
             <div className="contact-form">
-              <form>
+
+              <form onSubmit={handleSubmit}>
+
                 <div className={`form-group ${focusedInput === 'name' ? 'focused' : ''}`}>
                   <label htmlFor="name" className="form-label">
                     <span className="label-text">Full Name</span>
@@ -113,8 +170,18 @@ export default function ContactUs() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    autoComplete="email"
                     placeholder="Your email"
                     required
+                    maxLength={100}
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        email: e.target.value,
+                      })
+                    }
                     onFocus={() => setFocusedInput('email')}
                     onBlur={() => setFocusedInput(null)}
                   />
@@ -127,8 +194,17 @@ export default function ContactUs() {
                   <input
                     type="text"
                     id="subject"
+                    name="subject"
                     placeholder="Subject"
                     required
+                    maxLength={100}
+                    value={formData.subject}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        subject: e.target.value,
+                      })
+                    }
                     onFocus={() => setFocusedInput('subject')}
                     onBlur={() => setFocusedInput(null)}
                   />
@@ -140,15 +216,28 @@ export default function ContactUs() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     rows="5"
                     placeholder="Your message"
                     required
+                    maxLength={1000}
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        message: e.target.value,
+                      })
+                    }
                     onFocus={() => setFocusedInput('message')}
                     onBlur={() => setFocusedInput(null)}
                   ></textarea>
                   <div className="input-focus-effect"></div>
                 </div>
-                <button type="submit" className="submit-btn">
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isSubmitting}
+                >
                   <span className="btn-text">Send Message</span>
                   <span className="btn-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,7 +247,7 @@ export default function ContactUs() {
                 </button>
               </form>
             </div>
-            <div 
+            <div
               className={`contact-info ${isVisible.info ? 'visible' : ''}`}
               data-section="info"
             >
@@ -181,8 +270,8 @@ export default function ContactUs() {
                 </div>
                 <div className="info-content">
                   <h3>Email Us</h3>
-                  <p>info@biopay.com</p>
-                  <p>support@biopay.com</p>
+                  <p><a href="mailto:info@biopay.com">info@biopay.com</a></p>
+                  <p><a href="mailto:support@biopay.com">support@biopay.com</a></p>
                 </div>
               </div>
               <div className="info-item">
@@ -204,8 +293,8 @@ export default function ContactUs() {
                 </div>
                 <div className="info-content">
                   <h3>Call Us</h3>
-                  <p>+91 98765 43210</p>
-                  <p>+1 (555) 123-4567</p>
+                  <p><a href="tel:+919876543210">+91 98765 43210</a></p>
+                  <p><a href="tel:+15551234567">+1 (555) 123-4567</a></p>
                 </div>
               </div>
               <div className="info-item">
@@ -242,8 +331,8 @@ export default function ContactUs() {
         </div>
       </section>
 
-     
-      <section 
+
+      <section
         className={`faq-section ${isVisible.faq ? 'visible' : ''}`}
         data-section="faq"
       >

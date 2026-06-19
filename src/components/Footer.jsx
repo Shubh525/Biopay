@@ -3,58 +3,95 @@ import { Link } from 'react-router-dom';
 import './Footer.css';
 
 function Footer() {
- useEffect(() => {
-  const blobs = document.querySelectorAll('.footer-bg-blob');
-  const footer = document.querySelector('.bunsen-footer');
+  useEffect(() => {
+    const blobs = document.querySelectorAll(".footer-bg-blob");
+    const footer = document.querySelector(".bunsen-footer");
 
-  let animationFrame;
-
-  const handleMouseMove = (e) => {
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    const deltaX = e.clientX - centerX;
-    const deltaY = e.clientY - centerY;
-
-    cancelAnimationFrame(animationFrame);
-    animationFrame = requestAnimationFrame(() => {
-      blobs.forEach((blob, i) => {
-        const movementFactor = 30 + i * 5;
-        const x = deltaX / movementFactor;
-        const y = deltaY / movementFactor;
-        blob.style.transform = `translate(${x}px, ${y}px)`;
-      });
-    });
-  };
-
-  // Viewport detection logic
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          blobs.forEach((blob) => blob.classList.add('animate'));
-        } else {
-          blobs.forEach((blob) => blob.classList.remove('animate'));
-        }
-      });
-    },
-    {
-      threshold: 0.2, 
+    if (!footer) {
+      return () => { };
     }
-  );
 
-  if (footer) observer.observe(footer);
+    let animationFrame= null;
 
-  window.addEventListener('mousemove', handleMouseMove);
+    const handleMouseMove = (e) => {
+      if (!blobs.length) return;
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const deltaX = e.clientX - centerX;
+      const deltaY = e.clientY - centerY;
 
-  return () => {
-    window.removeEventListener('mousemove', handleMouseMove);
-    if (footer) observer.unobserve(footer);
-  };
-}, []);
+      if (animationFrame !== null) {
+  cancelAnimationFrame(animationFrame);
+}
+      animationFrame = requestAnimationFrame(() => {
+        blobs.forEach((blob, i) => {
+          const movementFactor = 30 + i * 5;
+          const x = deltaX / movementFactor;
+          const y = deltaY / movementFactor;
+          blob.style.transform = `translate(${x}px, ${y}px)`;
+        });
+      });
+    };
+
+    // Viewport detection logic
+    let observer = null;
+
+    if (window.IntersectionObserver) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              blobs.forEach((blob) => blob.classList.add('animate'));
+            } else {
+              blobs.forEach((blob) => blob.classList.remove('animate'));
+            }
+          });
+        },
+
+        {
+          threshold: 0.2,
+        }
+      );
+    }
+
+    if (footer && observer) {
+      observer.observe(footer);
+    }
+
+    window.addEventListener(
+  "mousemove",
+  handleMouseMove
+);
+    return () => {
+      window.removeEventListener(
+        "mousemove",
+        handleMouseMove
+      );
+
+      if (animationFrame !== undefined) {
+        cancelAnimationFrame(animationFrame);
+      }
+      if (
+        footer &&
+        observer &&
+        document.body.contains(footer)
+      ) {
+        observer.unobserve(footer);
+      }
+
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+
+  }, []);
 
   return (
-    <footer className="bunsen-footer">
-    
+    <footer
+      className="bunsen-footer"
+      aria-label="Site Footer"
+    >
+
       <div className="footer-bg-blob blob-1"></div>
       <div className="footer-bg-blob blob-2"></div>
       <div className="footer-bg-blob blob-3"></div>
@@ -65,15 +102,19 @@ function Footer() {
       <div className="footer-bg-blob blob-8"></div>
 
       <div className="cta-section">
-<h2 className="plain-heading floating-text">
-  Ready to begin your journey?
-</h2>
+        <h2 className="plain-heading floating-text">
+          Ready to begin your journey?
+        </h2>
 
 
 
-        <Link to="/" state={{ scrollToTop: true }}>
-          <button className="cta-button">Get started →</button>
-        </Link>
+        <Link
+  to="/"
+  state={{ scrollToTop: true }}
+  className="cta-button"
+>
+  Get started →
+</Link>
       </div>
 
       <div className="footer-main">
@@ -104,7 +145,7 @@ function Footer() {
               <h4>Who</h4>
               <ul>
                 <li>
-                  <Link to="/aboutUs">About Us</Link>
+                  <Link to="/about-us">About Us</Link>
                 </li>
               </ul>
             </div>
@@ -122,7 +163,7 @@ function Footer() {
                   </a>
                 </li>
                 <li>
-                  <Link to="/contactUs">Contact Us</Link>
+                  <Link to="/contact-us">Contact Us</Link>
                 </li>
               </ul>
             </div>
@@ -131,12 +172,17 @@ function Footer() {
 
         <div className="footer-bottom">
           <div className="footer-bottom-center">
-            <p>connectbiopay@gmail.com</p>
-            <p>+91 12345 67890</p>
+            <p><a href="mailto:connectbiopay@gmail.com">connectbiopay@gmail.com</a></p>
+            <p><a href="tel:+911234567890">+91 12345 67890</a></p>
 
             <div className="footer-links">
-              <a href="#">Terms & Conditions</a>
-              <a href="#">Privacy Policy</a>
+              <a href="/" onClick={(e) => e.preventDefault()}>
+                Terms & Conditions
+              </a>
+
+              <a href="/" onClick={(e) => e.preventDefault()}>
+                Privacy Policy
+              </a>
             </div>
 
             <p className="copyright">
