@@ -21,6 +21,7 @@ engine = create_engine(
     pool_pre_ping=True,    # test connection health before using it
 )
 
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 

@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "./AuthContext";
 import axios from 'axios';
 import './Home.css';
 
-import backgroundImage from '../assets/images/backgroundok.png';
 import homeImage from '../assets/images/home1.png';
 import thumbVideo from '../assets/images/thumbok.mp4';
-import HeroVideoMask from '../assets/images/thru.mp4';
 import backleft from '../assets/images/backleft.mp4';
 
 import MagneticButton from './MagneticButton';
@@ -18,27 +16,69 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export const Home = () => {
   const navigate = useNavigate();
-  const [message, setMessage] = useState('');
-  const [isPageReady, setIsPageReady] = useState(false);
-  const { isLoggedIn, handleLogout } = useAuth();
 
+  const handleStartNow = useCallback(() => {
+    navigate('/login');
+  }, [navigate]);
+
+  const [isPageReady, setIsPageReady] = useState(false);
+  const { isLoggedIn, setIsLoggedIn, handleLogout } = useAuth();
+  const pageReadyTimer = useRef(null);
   useEffect(() => {
+    const controller = new AbortController();
+
     const token = localStorage.getItem('token');
+
     if (token) {
-      axios.get('/routes/home', { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => {
-          setMessage(res.data.msg);
+      axios.get(
+        '/routes/home',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+          timeout: 5000,
+        }
+      )
+        .then(() => {
+          if (controller.signal.aborted) return;
+
           setIsLoggedIn(true);
-          setTimeout(() => setIsPageReady(true), 200);
+
+          pageReadyTimer.current = setTimeout(() => {
+            if (!controller.signal.aborted) {
+              setIsPageReady(true);
+            }
+          }, 200);
         })
-        .catch(() => {
+        .catch((err) => {
+          if (
+            axios.isCancel(err) ||
+            err.code === "ERR_CANCELED"
+          ) {
+            return;
+          }
+
+          console.error("Home API Error:", err);
+
           localStorage.removeItem('token');
+          setIsLoggedIn(false);
           setIsPageReady(true);
         });
     } else {
       setIsPageReady(true);
     }
-  }, []);
+
+    // ADD THIS PART
+    return () => {
+      controller.abort();
+
+      if (pageReadyTimer.current) {
+        clearTimeout(pageReadyTimer.current);
+      }
+    };
+
+  }, [setIsLoggedIn]);
 
 
 
@@ -62,6 +102,10 @@ export const Home = () => {
             loop
             muted
             playsInline
+            preload="metadata"
+            onError={(e) => {
+              console.error("Hero video failed to load", e);
+            }}
           />
 
           <div className="blur-bg"></div>
@@ -104,11 +148,18 @@ export const Home = () => {
                 }}
               >
                 {isLoggedIn ? (
-                  <button className="home-button white-button" onClick={handleLogout}>
+                  <button
+                    type="button"
+                    className="home-button white-button"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </button>
                 ) : (
-                  <MagneticButton label="Start Now" onClick={() => navigate('/login')} />
+                  <MagneticButton
+                    label="Start Now"
+                    onClick={handleStartNow}
+                  />
                 )}
               </motion.div>
             </motion.div>
@@ -126,6 +177,10 @@ export const Home = () => {
               muted
               loop
               playsInline
+              preload="metadata"
+              onError={(e) => {
+                console.error("Left video failed to load", e);
+              }}
             />
 
             <NoAnimation />
@@ -133,6 +188,11 @@ export const Home = () => {
               src={homeImage}
               alt="Home Visual"
               className="home1-image"
+              loading="lazy"
+              draggable="false"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
             />
           </div>
 

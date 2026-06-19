@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef
+} from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
@@ -9,37 +14,65 @@ const Login = () => {
   const [input, setInput] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setUserName, setIsLoggedIn } = useAuth();
+  const isMounted = useRef(true);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (loading) return;
+
+    setLoading(true);
     axios.post("http://localhost:5000/api/login", {
-      identifier: input,
+      identifier: input.trim(),
       password: password
     })
-    .then(response => {
-      if (response.data.msg === 'user not register' || response.data.msg === 'incorrect password') {
-        alert(response.data.msg);
-      } else {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("name", response.data.name);
-        setUserName(response.data.name);
-        setIsLoggedIn(true);
-        navigate('/home');
-      }
-      setInput('');
-      setPassword('');
-    })
-    .catch(error => {
-      console.error("Login failed", error);
-      alert("Login failed. Please try again.");
-    });
+      .then(response => {
+        if (response.data.msg === 'user not register' || response.data.msg === 'incorrect password') {
+          alert(response.data.msg);
+        } else {
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("name", response.data.name);
+          setUserName(response.data.name);
+          setIsLoggedIn(true);
+          navigate('/home');
+        }
+        if (isMounted.current) {
+          setInput('');
+          setPassword('');
+        }
+      })
+      .catch(error => {
+        console.error("Login failed", error);
+        alert("Login failed. Please try again.");
+      })
+      .finally(() => {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      });
   };
 
-  const handleGoogleResponse = async (response) => {
-    const token = response.credential;
-    const profile = JSON.parse(atob(token.split('.')[1]));
+  const handleGoogleResponse = useCallback(async (response) => {
+    const token = response?.credential;
+
+    if (!token) {
+      alert("Google login failed");
+      return;
+    }
+
+    let profile;
+    try {
+      profile = JSON.parse(
+        atob(token.split('.')[1])
+      );
+    } catch (err) {
+      alert("Invalid Google token");
+      return;
+    }
+
     const googleEmail = profile.email;
     const googleId = profile.sub;
 
@@ -62,31 +95,59 @@ const Login = () => {
         alert("Google login failed");
       }
     }
-  };
+  }, [navigate, setUserName, setIsLoggedIn]);
 
   useEffect(() => {
     if (window.google) {
-      google.accounts.id.initialize({
+      window.google.accounts.id.initialize({
         client_id: "764744594384-acr8oe0tt7qhdfrl8088f3gai0s91330.apps.googleusercontent.com",
         callback: handleGoogleResponse,
       });
 
-      google.accounts.id.renderButton(
-        document.getElementById("googleBtn"),
-        {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          width: 380
-        }
-      );
+      const googleBtn = document.getElementById("googleBtn");
+      if (googleBtn) {
+        googleBtn.innerHTML = "";
+
+        window.google.accounts.id.renderButton(
+          googleBtn,
+          {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            width: 380
+          }
+        );
+      }
     }
+
+    return () => {
+      if (window.google) {
+        window.google.accounts.id.cancel();
+      }
+    };
+  }, [handleGoogleResponse]);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   return (
     <div className="login-container">
-      <video className="login-background-video" autoPlay loop muted playsInline>
+      <video
+        className="login-background-video"
+        preload="metadata"
+        autoPlay
+        loop
+        muted
+        playsInline
+        onError={(e) => {
+          console.error("Login video failed to load", e);
+        }}
+      >
         <source src={loginVideo} type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
 
       <div className="login-overlay">
@@ -101,6 +162,7 @@ const Login = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Enter phone or email"
+                autoComplete="username"
                 required
               />
             </div>
@@ -113,25 +175,35 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
+                  autoComplete="current-password"
                   required
                 />
-                <span onClick={() => setShowPassword(!showPassword)}>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-pressed={showPassword}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
                   {showPassword ? 'Hide' : 'Show'}
-                </span>
+                </button>
               </div>
             </div>
 
-            <button type="submit" className="btn-primary">Log In</button>
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? "Logging In..." : "Log In"}
+            </button>
 
             {/* Real Google Button – must be visible for popup */}
             <div className="google-wrapper">
-  <img
-    className="google-icon"
-    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-  />
-  <span className="google-text">Sign in with Google</span>
-  <div id="googleBtn"></div>
-</div>
+              <img
+                className="google-icon"
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google sign in"
+              />
+              <span className="google-text">Sign in with Google</span>
+              <div id="googleBtn"></div>
+            </div>
 
 
             <p className="register-link">

@@ -3,6 +3,8 @@ import axios from "axios";
 import "./Diagnostic.css";
 import bgVideo from "../assets/images/login.mp4";
 
+const DEVICE_API = "http://localhost:5000/api/device/status";
+const DIAGNOSTIC_API = "http://localhost:5000/api/diagnostics/run";
 const Diagnostic = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,8 +15,13 @@ const Diagnostic = () => {
   const fetchDevices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/device/status");
-
+      setDiagnosticResults(null);
+      const res = await axios.get(
+        DEVICE_API,
+        {
+          timeout: 5000,
+        }
+      );
       if (res.data && res.data.connected) {
         setDevices([
           {
@@ -28,7 +35,9 @@ const Diagnostic = () => {
       }
     } catch (err) {
       console.error("Error fetching devices:", err);
+
       setDevices([]);
+      setDiagnosticResults(null);
     } finally {
       setLoading(false);
     }
@@ -36,24 +45,74 @@ const Diagnostic = () => {
 
   // Run full system diagnostics
   const handleRunDiagnostics = async () => {
+    if (diagnosticLoading) return;
     setDiagnosticLoading(true);
     setDiagnosticResults(null);
 
     try {
-      const res = await axios.get("http://localhost:5000/api/diagnostics/run");
-      setDiagnosticResults(res.data);
+      const res = await axios.get(
+        DIAGNOSTIC_API,
+        {
+          timeout: 10000,
+        }
+      );
+      setDiagnosticResults(res.data || {});
     } catch (err) {
       console.error("Diagnostics failed:", err);
+
       setDiagnosticResults({
         error: "Unable to run diagnostics. Please check backend logs.",
       });
+
+      setDevices([]);
     } finally {
       setDiagnosticLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDevices();
+    let isMounted = true;
+
+    const loadDevices = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axios.get(
+          DEVICE_API,
+          {
+            timeout: 5000,
+          }
+        );
+
+        if (!isMounted) return;
+
+        if (res.data && res.data.connected) {
+          setDevices([
+            {
+              manufacturer: "Fujitsu Frontech",
+              product: res.data.name || "PalmSecure Sensor",
+              serial_number: res.data.id || "Unknown",
+            },
+          ]);
+        } else {
+          setDevices([]);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setDevices([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDevices();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -64,6 +123,7 @@ const Diagnostic = () => {
         loop
         muted
         playsInline
+        preload="metadata"
       >
         <source src={bgVideo} type="video/mp4" />
       </video>
@@ -76,7 +136,11 @@ const Diagnostic = () => {
           <div className="diagnostic-section">
             <div className="diagnostic-header">
               <h3>Available Devices</h3>
-              <button className="btn-refresh" onClick={fetchDevices}>
+              <button
+                className="btn-refresh"
+                onClick={fetchDevices}
+                disabled={loading || diagnosticLoading}
+              >
                 {loading ? "Scanning..." : "🔄 Refresh"}
               </button>
             </div>
@@ -99,7 +163,7 @@ const Diagnostic = () => {
                 </thead>
                 <tbody>
                   {devices.map((device, index) => (
-                    <tr key={index}>
+                    <tr key={device.serial_number || index}>
                       <td>{index + 1}</td>
                       <td>{device.manufacturer}</td>
                       <td>{device.product}</td>
@@ -182,16 +246,17 @@ const Diagnostic = () => {
                       </p>
                       <p>{diagnosticResults.message}</p>
 
-                      {diagnosticResults.issues && diagnosticResults.issues.length > 0 && (
-                        <>
-                          <strong>Issues:</strong>
-                          <ul>
-                            {diagnosticResults.issues.map((issue, idx) => (
-                              <li key={idx} className="fail">⚠️ {issue}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
+                      {Array.isArray(diagnosticResults.issues) &&
+                        diagnosticResults.issues.length > 0 && (
+                          <>
+                            <strong>Issues:</strong>
+                            <ul>
+                              {diagnosticResults.issues.map((issue, idx) => (
+                                <li key={idx} className="fail">⚠️ {issue}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
                     </div>
                   </>
                 )}

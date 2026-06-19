@@ -36,3 +36,4 @@ backend/**/__pycache__/
 # Environment — never commit real secrets
 backend/.env
 .env
+.env

@@ -7,28 +7,74 @@ const DeviceDetails = () => {
   const [device, setDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
-useEffect(() => {
-  const fetchDevice = async () => {
+  const DEVICE_API = "http://localhost:5000/api/device/status";
+  const handleRefresh = async () => {
+    setLoading(true);
+
     try {
-      const res = await axios.get("http://localhost:5000/api/device/status");
+      const res = await axios.get(
+        DEVICE_API,
+        {
+          timeout: 5000,
+        }
+      );
+
       setDevice(res.data);
-    } catch (err) {
-      console.error("Error fetching device details:", err);
-      setError("Unable to fetch device details. Please check your connection.");
+      setError("");
+    } catch {
+      setError(
+        "Unable to fetch device details. Please check your connection."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  fetchDevice();
-  const interval = setInterval(fetchDevice, 4000); // Refresh every 4 seconds
-  return () => clearInterval(interval);
-}, []);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDevice = async () => {
+      try {
+        const res = await axios.get(
+          DEVICE_API,
+          {
+            timeout: 5000,
+          }
+        );
+
+        if (isMounted) {
+          setDevice(res.data);
+          setError("");
+        }
+      } catch (err) {
+        console.error("Error fetching device details:", err);
+        if (isMounted) {
+          setError("Unable to fetch device details. Please check your connection.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDevice();
+    const interval = setInterval(fetchDevice, 4000); // Refresh every 4 seconds
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="device-container">
-      <video className="device-background-video" autoPlay loop muted playsInline>
+      <video
+        className="device-background-video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+      >
         <source src={bgVideo} type="video/mp4" />
       </video>
 
@@ -45,9 +91,16 @@ useEffect(() => {
               <p><strong>Device Name:</strong> {device.name || "PalmSecure Sensor"}</p>
               <p><strong>Device ID:</strong> {device.id || "N/A"}</p>
               <p><strong>Firmware Version:</strong> {device.firmware || "1.0.0"}</p>
-              <p><strong>Connection Status:</strong> 
-                <span className={`status ${device.connected ? "connected" : "disconnected"}`}>
-                  {device.connected ? "Connected" : "Disconnected"}
+              <p><strong>Connection Status:</strong>
+                <span
+                  className={`status ${Boolean(device.connected)
+                    ? "connected"
+                    : "disconnected"
+                    }`}
+                >
+                  {Boolean(device.connected)
+                    ? "Connected"
+                    : "Disconnected"}
                 </span>
               </p>
               <p><strong>Last Checked:</strong> {new Date().toLocaleString()}</p>
@@ -56,8 +109,12 @@ useEffect(() => {
             <p className="device-error">No device data available.</p>
           )}
 
-          <button className="btn-refresh" onClick={() => window.location.reload()}>
-            Refresh
+          <button
+            className="btn-refresh"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>

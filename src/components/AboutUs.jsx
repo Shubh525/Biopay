@@ -21,13 +21,19 @@ export default function AboutUs() {
     const observerCallback = (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setIsVisible((prev) => ({
-            ...prev,
-            [entry.target.dataset.section]: true,
-          }));
+          const section = entry.target.dataset.section;
+
+          if (section) {
+            setIsVisible((prev) => ({
+              ...prev,
+              [section]: true,
+            }));
+          }
         }
       });
     };
+
+    if (!window.IntersectionObserver) return;
 
     const observer = new IntersectionObserver(
       observerCallback,
@@ -38,7 +44,13 @@ export default function AboutUs() {
     const sections = document.querySelectorAll("[data-section]");
     sections.forEach((section) => observer.observe(section));
 
-    return () => observer.disconnect();
+    return () => {
+      sections.forEach((section) => {
+        observer.unobserve(section);
+      });
+
+      observer.disconnect();
+    };
   }, []);
 
   return (
@@ -78,6 +90,8 @@ export default function AboutUs() {
                 src="/About-us/biopay-Fulcrum.jpg"
                 alt="Biometric payment technology"
                 className="hero-img"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -156,6 +170,8 @@ export default function AboutUs() {
                 autoPlay
                 muted
                 loop
+                playsInline
+                preload="metadata"
               >
                 <source src="/About-us/landscape.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
