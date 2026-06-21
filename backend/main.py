@@ -6,6 +6,8 @@ Run with:
     eventlet wsgi main:app            (production — single worker)
     gunicorn -k eventlet -w 1 main:app (production — gunicorn)
 """
+import eventlet
+eventlet.monkey_patch()
 
 import socket
 from app import create_app
@@ -35,8 +37,8 @@ if __name__ == "__main__":
     local_ip = get_local_ip()
     print(f"\nServer is running!")
     print(f"Access it on:")
-    print(f"   • Localhost  →  http://127.0.0.1:5000")
-    print(f"   • Network    →  http://{local_ip}:5000\n")
+    print(f"   Localhost  ->  http://127.0.0.1:5000")
+    print(f"   Network    ->  http://{local_ip}:5000\n")
 
     port = int(os.getenv("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port, debug=False)
