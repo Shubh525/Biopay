@@ -6,6 +6,8 @@ Run with:
     eventlet wsgi main:app            (production — single worker)
     gunicorn -k eventlet -w 1 main:app (production — gunicorn)
 """
+import eventlet
+eventlet.monkey_patch()
 
 import socket
 from app import create_app
