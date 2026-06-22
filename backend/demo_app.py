@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 import uuid
 # --- Load env FIRST ---
 load_dotenv()
+from account import seed_mock_account
 
 # --- Your project modules ---
 from palm_secure.jwt_utils import generate_token, decode_token

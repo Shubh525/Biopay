@@ -11,7 +11,7 @@ import socket
 from app import create_app
 from app.extensions import socketio
 from palm_secure.db import init_db
-
+from account import seed_mock_account
 
 def get_local_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
