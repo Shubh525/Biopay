@@ -1,0 +1,102 @@
+name: BioPay Production CI/CD
+
+on:
+push:
+branches:
+- main
+
+concurrency:
+group: production
+cancel-in-progress: true
+
+env:
+APP_DIR: /home/ubuntu/BioPay
+
+jobs:
+deploy:
+name: Deploy To Production
+runs-on: ubuntu-latest
+
+```
+steps:
+  - name: Checkout Code
+    uses: actions/checkout@v4
+
+  - name: Deploy Application
+    uses: appleboy/ssh-action@v1.2.0
+    with:
+      host: ${{ secrets.EC2_HOST }}
+      username: ${{ secrets.EC2_USER }}
+      key: ${{ secrets.EC2_PRIVATE_KEY }}
+      port: 22
+      script_stop: true
+
+      script: |
+        set -e
+
+        echo "===== START DEPLOYMENT ====="
+
+        cd /home/ubuntu/BioPay
+
+        git fetch origin
+        git reset --hard origin/main
+
+        echo "Creating Backend ENV"
+
+        cat > backend/.env << EOF
+        FLASK_ENV=production
+        SECRET_KEY=${{ secrets.SECRET_KEY }}
+        JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+
+        DB_HOST=${{ secrets.DB_HOST }}
+        DB_PORT=${{ secrets.DB_PORT }}
+        DB_NAME=${{ secrets.DB_NAME }}
+        DB_USER=${{ secrets.DB_USER }}
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+        RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }}
+
+        BRIDGE_JAR_PATH=${{ secrets.BRIDGE_JAR_PATH }}
+        EOF
+
+        echo "Installing frontend dependencies"
+
+        npm ci
+
+        echo "Building frontend"
+
+        npm run build
+
+        sudo mkdir -p /var/www/biopay
+        sudo rm -rf /var/www/biopay/*
+        sudo cp -r dist/* /var/www/biopay/
+
+        echo "Installing backend"
+
+        cd backend
+
+        if [ ! -d venv ]; then
+          python3 -m venv venv
+        fi
+
+        source venv/bin/activate
+
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install gunicorn
+
+        echo "Restarting backend"
+
+        sudo systemctl restart biopay
+
+        echo "Reloading nginx"
+
+        sudo nginx -t
+        sudo systemctl reload nginx
+
+        echo "Running Health Check"
+
+        curl -f http://127.0.0.1:8000/health || exit 1
+
+        echo "===== DEPLOYMENT SUCCESS ====="
+```
