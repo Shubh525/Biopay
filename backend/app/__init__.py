@@ -71,6 +71,12 @@ def create_app() -> Flask:
     app.register_blueprint(transactions_bp)
     app.register_blueprint(otp_bp)
 
+    # ── Health check ──────────────────────────────────────────────────────────
+    @app.get("/api/health")
+    def health():
+        from flask import jsonify
+        return jsonify({"status": "ok", "service": "BioPay Backend"}), 200
+
     # ── Error handlers ────────────────────────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):

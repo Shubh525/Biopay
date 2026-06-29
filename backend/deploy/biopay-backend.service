@@ -1,0 +1,46 @@
+[Unit]
+Description=BioPay Flask Backend (Gunicorn + Eventlet + Socket.IO)
+Documentation=https://github.com/your-org/biopay
+# Wait for network and RDS to be reachable before starting
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Run as www-data for security (least privilege)
+User=www-data
+Group=www-data
+
+# Working directory on EC2
+WorkingDirectory=/var/www/biopay/backend
+
+# Load all secrets from the .env file (never hardcode secrets here)
+EnvironmentFile=/var/www/biopay/backend/.env
+
+# Gunicorn with eventlet worker — -w 1 is REQUIRED for Socket.IO
+# (Socket.IO state is in-process; multiple workers break WebSocket sessions)
+ExecStart=/var/www/biopay/backend/venv/bin/gunicorn \
+    --worker-class eventlet \
+    --workers 1 \
+    --bind 127.0.0.1:5000 \
+    --timeout 120 \
+    --keep-alive 5 \
+    --access-logfile /var/log/biopay/gunicorn-access.log \
+    --error-logfile  /var/log/biopay/gunicorn-error.log \
+    --log-level info \
+    main:app
+
+# Graceful reload on SIGHUP (used by deploy script)
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Restart policy
+Restart=always
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

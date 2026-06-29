@@ -15,16 +15,15 @@ if not DATABASE_URL:
     )
 
 # Connection pool config — prevents exhaustion under load
+# NOTE: pool_pre_ping=True is critical for RDS which drops idle connections
 engine = create_engine(
     DATABASE_URL,
     pool_size=10,          # max persistent connections
     max_overflow=20,       # extra connections allowed during bursts
     pool_timeout=30,       # seconds to wait for a connection from the pool
     pool_recycle=1800,     # recycle connections after 30 min (avoids stale)
-    pool_pre_ping=True,    # test connection health before using it
+    pool_pre_ping=True,    # test connection health before using it — essential for RDS
 )
-
-engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 
