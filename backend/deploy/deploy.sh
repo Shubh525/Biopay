@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
 # BioPay Backend — Initial EC2 Bootstrap & Deploy Script
-# Run this ONCE on a fresh Ubuntu 22.04 EC2 instance to set everything up.
+# Run this ONCE on a fresh Ubuntu 24.04 EC2 instance to set everything up.
 #
 # Usage:
 #   chmod +x deploy.sh
 #   sudo ./deploy.sh
 #
 # Requirements:
-#   - Ubuntu 22.04 LTS
+#   - Ubuntu 24.04 LTS
 #   - Run as root or with sudo
 #   - Git repo already cloned OR will be cloned by this script
 # =============================================================================
@@ -21,7 +21,7 @@ BACKEND_DIR="$APP_DIR/backend"
 LOG_DIR="/var/log/biopay"
 REPO_URL="https://github.com/YOUR_ORG/YOUR_REPO.git"   # ← update this
 DOMAIN="api.connectbiopay.com"
-PYTHON_VERSION="python3.11"
+PYTHON_VERSION="python3.12"
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo ""
@@ -34,14 +34,27 @@ echo ""
 echo "▶ Installing system packages..."
 apt-get update -qq
 apt-get install -y -qq \
-    python3.11 python3.11-venv python3.11-dev \
+    python3.12 python3.12-venv python3.12-dev \
     python3-pip \
     nginx \
-    certbot python3-certbot-nginx \
-    postgresql-client \
+    snapd \
     git \
     curl \
     ufw
+
+# Install certbot via snap (recommended on Ubuntu 24.04)
+echo "▶ Installing Certbot via snap..."
+snap install --classic certbot
+ln -sf /snap/bin/certbot /usr/bin/certbot
+
+# Add PostgreSQL 18 official APT repo (not in Ubuntu 24.04 default repos)
+echo "▶ Adding PostgreSQL 18 APT repository..."
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+echo "deb [arch=amd64] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
+    > /etc/apt/sources.list.d/pgdg.list
+apt-get update -qq
+apt-get install -y -qq postgresql-client-18
 
 # ── 2. Firewall ───────────────────────────────────────────────────────────────
 echo "▶ Configuring UFW firewall..."
