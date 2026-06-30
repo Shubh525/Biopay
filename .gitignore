@@ -7,8 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node / Build output (root and frontend/)
 node_modules
+frontend/node_modules
 dist
+frontend/dist
 dist-ssr
 *.local
 
@@ -25,6 +28,7 @@ dist-ssr
 
 # Large media files (exceeds GitHub 100 MB limit)
 public/About-us/landscape.mp4
+frontend/public/About-us/landscape.mp4
 
 # Python
 backend/venv/
@@ -35,5 +39,7 @@ backend/**/__pycache__/
 
 # Environment — never commit real secrets
 backend/.env
+frontend/.env
+frontend/.env.local
 .env
-.env
+
