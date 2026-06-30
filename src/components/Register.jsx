@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import loginVideo from '../assets/images/login.mp4'; // Background video
 import './Register.css';
+import API_BASE from '../api.js';
 
 export const Register = () => {
   const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ export const Register = () => {
 
     try {
       setScanning(true);
-      const res = await axios.get('http://localhost:5000/api/scan_bio_id', {
+      const res = await axios.get(`${API_BASE}/api/scan_bio_id`, {
         timeout: 10000,
         signal: scanControllerRef.current.signal
       });
@@ -80,7 +81,7 @@ export const Register = () => {
     setLoading(true);
 
     axios.post(
-      'http://localhost:5000/api/register_user',
+      `${API_BASE}/api/register_user`,
       {
         bio_id: bioId.trim(),
         username: name.trim(),

@@ -3,8 +3,10 @@ import axios from "axios";
 import "./Diagnostic.css";
 import bgVideo from "../assets/images/login.mp4";
 
-const DEVICE_API = "http://localhost:5000/api/device/status";
-const DIAGNOSTIC_API = "http://localhost:5000/api/diagnostics/run";
+import API_BASE from '../api.js';
+
+const DEVICE_API = `${API_BASE}/api/device/status`;
+const DIAGNOSTIC_API = `${API_BASE}/api/diagnostics/run`;
 const Diagnostic = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -1,5 +1,6 @@
 // AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
+import API_BASE from '../api.js';
 
 const AuthContext = createContext(null);
 
@@ -24,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
 
-        const res = await fetch('http://localhost:5000/api/auth/verify', {
+        const res = await fetch(`${API_BASE}/api/auth/verify`, {
           signal: controller.signal,
           headers: {
             Authorization: `Bearer ${token}`,

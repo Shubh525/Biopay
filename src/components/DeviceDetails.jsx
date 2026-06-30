@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./DeviceDetails.css";
 import bgVideo from "../assets/images/login.mp4"; // reuse same background video
+import API_BASE from '../api.js';
 
 const DeviceDetails = () => {
   const [device, setDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const DEVICE_API = "http://localhost:5000/api/device/status";
+  const DEVICE_API = `${API_BASE}/api/device/status`;
   const handleRefresh = async () => {
     setLoading(true);
 

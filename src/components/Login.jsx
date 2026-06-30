@@ -9,6 +9,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 import loginVideo from '../assets/images/login.mp4';
 import { useAuth } from './AuthContext';
+import API_BASE from '../api.js';
+
 
 const Login = () => {
   const [input, setInput] = useState('');
@@ -25,7 +27,7 @@ const Login = () => {
     if (loading) return;
 
     setLoading(true);
-    axios.post("http://localhost:5000/api/login", {
+    axios.post(`${API_BASE}/api/login`, {
       identifier: input.trim(),
       password: password
     })
@@ -77,7 +79,7 @@ const Login = () => {
     const googleId = profile.sub;
 
     try {
-      const res = await axios.post("http://localhost:5000/api/google-login", {
+      const res = await axios.post(`${API_BASE}/api/google-login`, {
         email: googleEmail,
         google_id: googleId
       });
