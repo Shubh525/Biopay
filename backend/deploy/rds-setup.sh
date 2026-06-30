@@ -89,7 +89,7 @@ fi
 # ── Step 3: Initialize schema via SQLAlchemy (init_db) ────────────────────────
 echo ""
 echo "▶ Step 3 — Initializing schema (creates tables via SQLAlchemy)..."
-python - <<'PYEOF'
+venv/bin/python - <<'PYEOF'
 import sys, os
 sys.path.insert(0, '.')
 # Ensure we load the RDS .env
