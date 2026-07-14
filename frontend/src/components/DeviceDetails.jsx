@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./DeviceDetails.css";
-import bgVideo from "../assets/images/login.mp4"; // reuse same background video
 import API_BASE from '../api.js';
 
 const DeviceDetails = () => {
@@ -76,7 +75,7 @@ const DeviceDetails = () => {
         playsInline
         preload="metadata"
       >
-        <source src={bgVideo} type="video/mp4" />
+        <source src="/videos/login.mp4" type="video/mp4" />
       </video>
 
       <div className="device-overlay">
