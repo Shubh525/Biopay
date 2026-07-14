@@ -122,7 +122,7 @@ function Footer() {
 
         <div className="footer-top-centered">
           <div className="footer-logo">
-            <h2 className="solid-text">BIOPAY</h2>
+            <h2 className="solid-text">CONNECTBIOPAY</h2>
 
 
 
@@ -186,7 +186,7 @@ function Footer() {
             </div>
 
             <p className="copyright">
-              © Copyright 2025 BIOPAY. All Rights Reserved.
+              © Copyright 2025 CONNECTBIOPAY. All Rights Reserved.
             </p>
           </div>
         </div>

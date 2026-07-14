@@ -103,7 +103,7 @@ export default function ContactUs() {
         <div className="container">
           <div className="hero-content">
             <div className="hero-text">
-              <h2 className="animated-title">Get In Touch With BioPay</h2>
+              <h2 className="animated-title">Get In Touch With Connectbiopay</h2>
               <div className="animated-paragraph">
                 <p>
                   Have questions about our biometric payment solutions? Ready to
@@ -111,12 +111,12 @@ export default function ContactUs() {
                 </p>
                 <p>
                   Our team is here to help you navigate the future of contactless
-                  payments. Whether you're a business looking to implement BioPay
+                  payments. Whether you're a business looking to implement Connectbiopay
                   or a curious individual wanting to learn more, we're just a
                   message away.
                 </p>
                 <p>
-                  Reach out today and discover how BioPay can revolutionize your
+                  Reach out today and discover how connectbiopcan revolutionize your
                   payment experience with secure, simple palm biometric
                   technology.
                 </p>
@@ -126,7 +126,7 @@ export default function ContactUs() {
             <div className="hero-image">
               <img
                 src={teamPhoto}
-                alt="Contact BioPay team"
+                alt="Contact Connectbiopay team"
                 className="hero-img"
                 loading="lazy"
                 decoding="async"
@@ -270,8 +270,8 @@ export default function ContactUs() {
                 </div>
                 <div className="info-content">
                   <h3>Email Us</h3>
-                  <p><a href="mailto:info@biopay.com">info@biopay.com</a></p>
-                  <p><a href="mailto:support@biopay.com">support@biopay.com</a></p>
+                  <p><a href="mailto:info@connectbiopay.com">info@connectbiopay.com</a></p>
+                  <p><a href="mailto:support@connectbiopay.com">support@connectbiopay.com</a></p>
                 </div>
               </div>
               <div className="info-item">
@@ -350,18 +350,18 @@ export default function ContactUs() {
               </p>
             </div>
             <div className="faq-item">
-              <h3>How can businesses integrate BioPay?</h3>
+              <h3>How can businesses integrate Connectbiopay?</h3>
               <p>
                 We offer seamless integration solutions for businesses of all
                 sizes. Our team works directly with your technical staff to
-                implement BioPay into your existing payment infrastructure with
+                implement Connectbiopay into your existing payment infrastructure with
                 minimal disruption to your operations.
               </p>
             </div>
             <div className="faq-item">
               <h3>Is my biometric data stored securely?</h3>
               <p>
-                Absolutely. BioPay employs end-to-end encryption and secure
+                Absolutely. Connectbiopay employs end-to-end encryption and secure
                 tokenization. Your biometric data is never stored as raw
                 images—only as encrypted mathematical representations that
                 cannot be reverse-engineered.

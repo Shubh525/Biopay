@@ -30,7 +30,7 @@ const Work = () => {
             Our Work
           </h1>
           <p id="work-subtitle" className="work-subtitle">
-            Real-world applications of BioPay in industries and organizations.
+            Real-world applications of ConnectbioPay in industries and organizations.
           </p>
 
           <div className="work-grid" role="list" aria-labelledby="work-heading">

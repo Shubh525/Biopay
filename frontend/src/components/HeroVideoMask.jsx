@@ -25,9 +25,9 @@ const HeroVideoMask = () => {
       <div className="video-text-mask">
         <h1
           className="mask-text"
-          aria-label="BIOPAY"
+          aria-label="CONNECTBIOPAY"
         >
-          BIOPAY
+          CONNECTBIOPAY
         </h1>
       </div>
     </div>

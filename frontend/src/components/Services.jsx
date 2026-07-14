@@ -30,7 +30,7 @@ const Services = () => {
             Our Services
           </h1>
           <p className="services-subtitle">
-            BioPay combines biometric authentication with secure digital payments.
+            ConnectbioPay combines biometric authentication with secure digital payments.
           </p>
 
           <div className="services-grid" role="list">

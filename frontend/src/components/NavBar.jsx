@@ -55,7 +55,7 @@ const NavBar = () => {
         
         <div className="logo-nav">
           <NavLink to="/home">
-            <h3 className="logo-text">BioPay</h3>
+            <h3 className="logo-text">ConnectbioPay</h3>
           </NavLink>
         </div>
 
