@@ -16,7 +16,6 @@ Login credentials (for /api/login):
     password   : Mock@1234
 """
 
-import uuid
 import logging
 import bcrypt
 from palm_secure.db import SessionLocal
@@ -29,8 +28,8 @@ logger = logging.getLogger(__name__)
 # Plain-text credentials  (use these in the frontend / Postman / tests)
 # ---------------------------------------------------------------------------
 MOCK_USERNAME = "MockUser"
-MOCK_EMAIL    = "mock@biopay.dev"
-MOCK_PHONE    = "9999900000"
+MOCK_EMAIL = "mock@biopay.dev"
+MOCK_PHONE = "9999900000"
 MOCK_PASSWORD = "Mock@1234"
 
 # A realistic-length Base64 biometric template (>100 chars as required by the

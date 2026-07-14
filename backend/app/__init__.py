@@ -8,16 +8,16 @@ Import this module to get a fully wired app instance.
 import eventlet
 eventlet.monkey_patch()
 
-import os
-import logging
-import warnings
-from flask import Flask
-from flask_cors import CORS
-from dotenv import load_dotenv
+import os  # noqa: E402
+import logging  # noqa: E402
+import warnings  # noqa: E402
+from flask import Flask  # noqa: E402
+from flask_cors import CORS  # noqa: E402
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 
-from .extensions import socketio, limiter
+from .extensions import socketio, limiter  # noqa: E402
 
 
 def create_app() -> Flask:

@@ -28,7 +28,7 @@ _otp_store: dict = {}
 
 def _send_otp_email(to_email: str, otp: str) -> None:
     """Send a 6-digit OTP to the given email address via SMTP."""
-    from_email    = os.environ.get("SMTP_EMAIL")
+    from_email = os.environ.get("SMTP_EMAIL")
     from_password = os.environ.get("SMTP_PASSWORD")
 
     if not from_email or not from_password:
@@ -36,8 +36,8 @@ def _send_otp_email(to_email: str, otp: str) -> None:
         return
 
     msg = MIMEMultipart()
-    msg["From"]    = from_email
-    msg["To"]      = to_email
+    msg["From"] = from_email
+    msg["To"] = to_email
     msg["Subject"] = "Your BioPay OTP Code"
     msg.attach(MIMEText(f"Your OTP code is: {otp}\n\nIt expires in 5 minutes.", "plain"))
 
@@ -57,13 +57,13 @@ def _send_otp_email(to_email: str, otp: str) -> None:
 @otp_bp.route("/api/send-otp/email", methods=["POST"])
 def send_otp_email_route():
     """Generate an OTP and send it to the provided email address."""
-    data  = request.json or request.form or {}
+    data = request.json or request.form or {}
     email = (data.get("email") or "").strip()
 
     if not email:
         return jsonify({"status": "error", "message": "Email is required"}), 400
 
-    otp    = str(random.randint(100000, 999999))
+    otp = str(random.randint(100000, 999999))
     expiry = datetime.datetime.now() + datetime.timedelta(minutes=5)
     _otp_store[email] = {"otp": otp, "expiry": expiry}
 
@@ -76,8 +76,8 @@ def send_otp_email_route():
 @otp_bp.route("/api/verify-otp", methods=["POST"])
 def verify_otp():
     """Verify the OTP submitted by the user."""
-    data  = request.json or request.form or {}
-    otp   = (data.get("otp")   or "").strip()
+    data = request.json or request.form or {}
+    otp = (data.get("otp") or "").strip()
     email = (data.get("email") or "").strip()
     phone = (data.get("phone") or "").strip()
 

@@ -15,31 +15,31 @@ def _utcnow():
 class User(Base):
     __tablename__ = 'users'
 
-    id               = Column(String, primary_key=True)
-    username         = Column(String, unique=True, nullable=False)
-    email            = Column(String, unique=True, nullable=False)
-    phone            = Column(String)
-    password_hash    = Column(Text, nullable=False)
-    bio_id_hash      = Column(Text)
+    id = Column(String, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    phone = Column(String)
+    password_hash = Column(Text, nullable=False)
+    bio_id_hash = Column(Text)
     bio_id_encrypted = Column(Text)
 
 
 class ContactMessage(Base):
     __tablename__ = 'contact_messages'
 
-    id        = Column(String, primary_key=True)
-    email     = Column(String)
-    phone     = Column(String)
-    message   = Column(Text)
+    id = Column(String, primary_key=True)
+    email = Column(String)
+    phone = Column(String)
+    message = Column(Text)
     timestamp = Column(DateTime, default=_utcnow)
 
 
 class Transaction(Base):
     __tablename__ = 'transactions'
 
-    id          = Column(String, primary_key=True)
-    user_id     = Column(String, ForeignKey('users.id'), nullable=False)
-    amount      = Column(Float, nullable=False)
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey('users.id'), nullable=False)
+    amount = Column(Float, nullable=False)
     description = Column(Text)
-    timestamp   = Column(DateTime, default=_utcnow)
-    status      = Column(String, default='pending')
+    timestamp = Column(DateTime, default=_utcnow)
+    status = Column(String, default='pending')

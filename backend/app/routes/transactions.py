@@ -22,11 +22,11 @@ transactions_bp = Blueprint("transactions", __name__)
 @token_required
 def create_transaction(current_user):
     """Create a new transaction."""
-    data        = request.json or {}
-    user_id     = data.get("user_id")
-    amount      = data.get("amount")
+    data = request.json or {}
+    user_id = data.get("user_id")
+    amount = data.get("amount")
     description = data.get("description", "")
-    status      = data.get("status", "pending")
+    status = data.get("status", "pending")
 
     if not user_id or amount is None:
         return jsonify({"error": "user_id and amount are required"}), 400
@@ -46,12 +46,12 @@ def create_transaction(current_user):
         return jsonify({
             "message": "Transaction created",
             "transaction": {
-                "id":          txn.id,
-                "user_id":     txn.user_id,
-                "amount":      txn.amount,
+                "id": txn.id,
+                "user_id": txn.user_id,
+                "amount": txn.amount,
                 "description": txn.description,
-                "status":      txn.status,
-                "timestamp":   txn.timestamp.isoformat(),
+                "status": txn.status,
+                "timestamp": txn.timestamp.isoformat(),
             },
         }), 201
 
@@ -72,12 +72,12 @@ def list_transactions(current_user):
         txns = session.query(Transaction).order_by(Transaction.timestamp.desc()).all()
         return jsonify([
             {
-                "id":          t.id,
-                "user_id":     t.user_id,
-                "amount":      t.amount,
+                "id": t.id,
+                "user_id": t.user_id,
+                "amount": t.amount,
                 "description": t.description,
-                "status":      t.status,
-                "timestamp":   t.timestamp.isoformat(),
+                "status": t.status,
+                "timestamp": t.timestamp.isoformat(),
             }
             for t in txns
         ])
@@ -99,12 +99,12 @@ def get_transaction(current_user, txn_id: str):
             return jsonify({"error": "Transaction not found"}), 404
 
         return jsonify({
-            "id":          txn.id,
-            "user_id":     txn.user_id,
-            "amount":      txn.amount,
+            "id": txn.id,
+            "user_id": txn.user_id,
+            "amount": txn.amount,
             "description": txn.description,
-            "status":      txn.status,
-            "timestamp":   txn.timestamp.isoformat(),
+            "status": txn.status,
+            "timestamp": txn.timestamp.isoformat(),
         })
     except SQLAlchemyError as e:
         logger.error(f"Transaction fetch failed: {e}")

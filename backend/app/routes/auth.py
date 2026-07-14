@@ -34,10 +34,10 @@ _pending_logins: dict = {}
 def register_user():
     """Register a new user — palm vein enrollment happens separately after registration."""
     data = request.json or {}
-    username  = (data.get("username")  or "").strip()
-    email     = (data.get("email")     or "").strip()
-    phone     = (data.get("phone")     or "").strip()
-    password  = (data.get("password")  or "").encode("utf-8")
+    username = (data.get("username") or "").strip()
+    email = (data.get("email") or "").strip()
+    phone = (data.get("phone") or "").strip()
+    password = (data.get("password") or "").encode("utf-8")
 
     if not all([username, email, phone, password]):
         return jsonify({"error": "Missing fields"}), 400
@@ -90,7 +90,7 @@ def login():
     """Step 1: Authenticate with email/phone + password. Returns OTP requirement."""
     data = request.json or {}
     identifier = (data.get("identifier") or "").strip()   # email or phone
-    password   = (data.get("password")   or "").encode("utf-8")
+    password = (data.get("password") or "").encode("utf-8")
 
     if not identifier or not password:
         return jsonify({"error": "Missing credentials"}), 400
@@ -172,10 +172,10 @@ def google_login():
     if request.method == "OPTIONS":
         return "", 200
 
-    data      = request.json or {}
-    email     = (data.get("email")     or "").strip()
+    data = request.json or {}
+    email = (data.get("email") or "").strip()
     google_id = (data.get("google_id") or "").strip()
-    phone     = (data.get("phone")     or "").strip()
+    phone = (data.get("phone") or "").strip()
 
     if not email or not google_id:
         return jsonify({"error": "Missing Google credentials"}), 400
@@ -271,7 +271,7 @@ def enroll_bio(current_user):
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        bio_id_hash      = bcrypt.hashpw(bio_id.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
+        bio_id_hash = bcrypt.hashpw(bio_id.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
         bio_id_encrypted = encryption_layer.encrypt_bio_template(bio_id)
 
         user.bio_id_hash = bio_id_hash

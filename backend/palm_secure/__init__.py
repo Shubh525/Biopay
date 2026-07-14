@@ -15,14 +15,14 @@ Functions:
     get_version(): Get the SDK version.
 """
 
-from .device import PalmSecureDevice, find_devices
-from .exceptions import (
+from .device import PalmSecureDevice, find_devices  # noqa: F401
+from .exceptions import (  # noqa: F401
     DeviceNotFoundError,
     DeviceConnectionError,
     ConnectionError,      # backward-compat alias (shadows builtin)
     OperationError,
 )
-from .diagnostics import DiagnosticsManager
+from .diagnostics import DiagnosticsManager  # noqa: F401
 
 
 __version__ = "0.1.0"

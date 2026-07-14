@@ -176,7 +176,7 @@ COMPATIBLE_DRIVER_VERSIONS = [
 DEFAULT_PARAMS = {
     "EXPOSURE": 100,  # Default exposure value
     "GAIN": 50,       # Default gain value
-    "THRESHOLD": 128, # Default threshold value
+    "THRESHOLD": 128,  # Default threshold value
     "TIMEOUT": 10000  # Default operation timeout in milliseconds
 }
 

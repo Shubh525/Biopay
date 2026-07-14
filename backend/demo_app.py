@@ -3,45 +3,58 @@
 import eventlet
 eventlet.monkey_patch()
 
-import os
-import sys
-import time
-import base64
-import random
-import logging
-import warnings
-import datetime
-import smtplib
-import subprocess
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from sqlalchemy.exc import SQLAlchemyError
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask_socketio import SocketIO, emit
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-import bcrypt
-from dotenv import load_dotenv
-import uuid
+import os  # noqa: E402
+import sys  # noqa: E402
+import time  # noqa: E402
+import base64  # noqa: E402
+import random  # noqa: E402
+import logging  # noqa: E402
+import warnings  # noqa: E402
+import datetime  # noqa: E402
+import smtplib  # noqa: E402
+from email.mime.text import MIMEText  # noqa: E402
+from email.mime.multipart import MIMEMultipart  # noqa: E402
+from sqlalchemy.exc import SQLAlchemyError  # noqa: E402
+from flask import Flask, request, jsonify  # noqa: E402
+from flask_cors import CORS  # noqa: E402
+from flask_socketio import SocketIO  # noqa: E402
+from flask_limiter import Limiter  # noqa: E402
+from flask_limiter.util import get_remote_address  # noqa: E402
+import bcrypt  # noqa: E402
+from dotenv import load_dotenv  # noqa: E402
+import uuid  # noqa: E402
 # --- Load env FIRST ---
 load_dotenv()
-from account import seed_mock_account
 
 # --- Your project modules ---
-from palm_secure.jwt_utils import generate_token, decode_token
-from palm_secure import PalmSecureDevice, find_devices, get_version
-from palm_secure.exceptions import DeviceNotFoundError, ConnectionError
-from palm_secure.diagnostics import DiagnosticsManager
-from palm_secure.securityLayer import PalmVeinPaymentEncryption
-from palm_secure.db import SessionLocal, init_db
-from palm_secure.models import User, ContactMessage, Transaction
+from palm_secure.jwt_utils import generate_token  # noqa: E402
+from palm_secure import PalmSecureDevice, find_devices  # noqa: E402
+from palm_secure.diagnostics import DiagnosticsManager  # noqa: E402
+from palm_secure.securityLayer import PalmVeinPaymentEncryption  # noqa: E402
+from palm_secure.db import SessionLocal, init_db  # noqa: E402
+from palm_secure.models import User, Transaction  # noqa: E402
 
 # -----------------------------------------------------------------------------
 # Config & Globals
 # -----------------------------------------------------------------------------
 
 SIMULATE = os.getenv("SIMULATE", "false").lower() == "true"
+
+# Scan cooldown (seconds) between consecutive biometric scans
+SCAN_COOLDOWN = 3
+
+# In-memory OTP store: {email_or_phone: {"otp": str, "expiry": datetime}}
+otp_store = {}
+
+
+def run_java_bridge(args: list, timeout: int = 30) -> str:
+    """Run the Java SDK bridge subprocess."""
+    import subprocess as _sp
+    jar_path = os.path.join(os.path.dirname(__file__), "palm_bridge.jar")
+    cmd = ["java", "-jar", jar_path] + [str(a) for a in args]
+    result = _sp.run(cmd, capture_output=True, text=True, timeout=timeout)
+    return result.stdout.strip()
+
 
 # Logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s | %(levelname)s | %(message)s")
@@ -80,51 +93,55 @@ app_state = {
     "backend_available": True,
 }
 
-# api for extract bio id of new user 
+# api for extract bio id of new user
+
+
 @app.route("/api/scan_bio_id", methods=["GET", "POST"])
 def scan_bio_id():
     """Capture biometric template for ENROLLMENT (registration only)"""
     global last_scan_time
     current_time = time.time()
-    
+
     if current_time - last_scan_time < SCAN_COOLDOWN:
         return jsonify({
             "error": f"Please wait {SCAN_COOLDOWN - (current_time - last_scan_time):.1f} seconds between scans"
         }), 429
-    
+
     last_scan_time = current_time
-    
+
     try:
         if SIMULATE:
             simulated = base64.b64encode(b"ENROLLMENT_TEMPLATE").decode()
             logging.info(f"[SIMULATED ENROLLMENT SCAN] bio_id_base64={simulated}")
             return jsonify({"bio_id_base64": simulated, "status": "success"})
-        
+
         # ✅ Use "capture" for ENROLLMENT templates
         bio = run_java_bridge(["capture"], timeout=45)
-        
+
         if not bio:
             return jsonify({"error": "Empty capture from Java bridge"}), 500
 
         # Extract clean Base64 template from verbose output
         clean_bio = extract_clean_template(bio)
-        
+
         if clean_bio and len(clean_bio) > 100:
             logging.info(f"[HARDWARE ENROLLMENT SCAN] Extracted enrollment template length={len(clean_bio)}")
             return jsonify({
                 "bio_id_base64": clean_bio,
-                "status": "success", 
+                "status": "success",
                 "template_length": len(clean_bio),
                 "template_type": "enrollment"
             })
         else:
             logging.warning("No valid enrollment template found in response")
             return jsonify({"error": "No valid enrollment data captured"}), 500
-            
+
     except Exception as e:
         logging.error(f"Enrollment scan error: {e}")
         return jsonify({"error": str(e)}), 500
 # route for google login
+
+
 @app.route("/api/google-login", methods=["POST", "OPTIONS"])
 def google_login():
     if request.method == "OPTIONS":
@@ -159,35 +176,37 @@ def google_login():
         }), 200
     finally:
         session.close()
-#created for capturing bio id of existing users does not store just for comparing but never completed
-@app.route("/api/scan_auth_feature", methods=["GET", "POST"]) 
+# created for capturing bio id of existing users does not store just for comparing but never completed
+
+
+@app.route("/api/scan_auth_feature", methods=["GET", "POST"])
 def scan_auth_feature():
     """Extract authentication features (NOT enrollment)"""
     global last_scan_time
     current_time = time.time()
-    
+
     if current_time - last_scan_time < SCAN_COOLDOWN:
         return jsonify({
             "error": f"Please wait {SCAN_COOLDOWN - (current_time - last_scan_time):.1f} seconds between scans"
         }), 429
-    
+
     last_scan_time = current_time
-    
+
     try:
         if SIMULATE:
             simulated = base64.b64encode(b"AUTH_FEATURE").decode()
             logging.info(f"[SIMULATED AUTH SCAN] auth_feature={simulated}")
             return jsonify({"auth_feature": simulated, "status": "success"})
-        
+
         # ✅ Use "extract_auth" for AUTHENTICATION features
         bio = run_java_bridge(["extract_auth"], timeout=30)
-        
+
         if not bio:
             return jsonify({"error": "Empty auth feature from Java bridge"}), 500
 
         # Extract clean Base64 template from verbose output
         clean_bio = extract_clean_template(bio)
-        
+
         if clean_bio and len(clean_bio) > 100:
             logging.info(f"[HARDWARE AUTH SCAN] Extracted auth feature length={len(clean_bio)}")
             return jsonify({
@@ -199,11 +218,13 @@ def scan_auth_feature():
         else:
             logging.warning("No valid authentication feature found in response")
             return jsonify({"error": "No valid authentication data captured"}), 500
-            
+
     except Exception as e:
         logging.error(f"Auth scan error: {e}")
         return jsonify({"error": str(e)}), 500
 # old SDK sometimes returns text mixed with logs + Base64 instead of pure Base64
+
+
 def extract_clean_template(raw_output):
     """Extract high-quality template from raw Java output"""
     try:
@@ -211,38 +232,40 @@ def extract_clean_template(raw_output):
         for line in lines:
             line = line.strip()
             # Look for valid Base64 that's not a fallback
-            if (len(line) > 100 and
-                line.replace('=', '').replace('+', '').replace('/', '').isalnum() and
-                not line.startswith('FALLBACK') and
-                not line.startswith('ERROR')):
+            if (len(line) > 100
+                and line.replace('=', '').replace('+', '').replace('/', '').isalnum()
+                and not line.startswith('FALLBACK')
+                    and not line.startswith('ERROR')):
                 return line
-        
+
         # Fallback: look for any valid Base64
         for line in lines:
             line = line.strip()
             if len(line) > 50 and line.replace('=', '').replace('+', '').replace('/', '').isalnum():
                 return line
-        
+
         return None
     except Exception as e:
         logger.error(f"Template extraction failed: {e}")
         return None
 
-#created for validating existing bio id but not completed
+# created for validating existing bio id but not completed
+
+
 @app.route("/api/validate_bio", methods=["POST"])
 def validate_bio():
     """Validate using proper enrollment vs authentication template comparison"""
     data = request.json or {}
     auth_feature = (data.get("bio_id") or "").strip()  # This should be AUTH feature now
-    
+
     if not auth_feature:
         return jsonify({"match": False, "error": "Authentication feature required"}), 400
-    
+
     # ✅ VALIDATE INPUT FIRST
     if len(auth_feature) < 100 or not auth_feature.replace('=', '').replace('+', '').replace('/', '').isalnum():
         logger.warning(f"Invalid auth feature format: {auth_feature[:20]}...")
         return jsonify({"match": False, "verdict": "INVALID_TEMPLATE"}), 400
-    
+
     # ✅ REJECT FAKE TEMPLATES
     if any(fake in auth_feature.upper() for fake in ["FAKE", "TEST", "MOCK", "DUMMY"]):
         logger.warning(f"Fake auth feature detected: {auth_feature[:20]}...")
@@ -251,11 +274,11 @@ def validate_bio():
     session = SessionLocal()
     try:
         users = session.query(User).all()
-        
+
         if not users:
             logger.info("No users in database")
             return jsonify({"match": False, "verdict": "NO_USERS"}), 404
-        
+
         for user in users:
             try:
                 # Decrypt stored ENROLLMENT template
@@ -273,7 +296,7 @@ def validate_bio():
                 comparison_result = run_java_bridge([
                     "compare", enrollment_template, auth_feature
                 ], timeout=15)
-                
+
                 logger.info(f"Java bridge result for {user.username}: {comparison_result}")
 
                 # ✅ STRICT MATCH CHECKING
@@ -282,7 +305,7 @@ def validate_bio():
                         "username": user.username,
                         "email": user.email
                     })
-                    
+
                     logger.info(f"✅ SUCCESSFUL MATCH for {user.username}")
                     return jsonify({
                         "match": True,
@@ -312,7 +335,9 @@ def validate_bio():
         return jsonify({"match": False, "error": str(e)}), 500
     finally:
         session.close()
-#called for checking device status
+# called for checking device status
+
+
 @app.route("/api/device/status", methods=["GET"])
 def device_status():
     """
@@ -340,8 +365,8 @@ def device_status():
         selected_device = devices[0]
 
         # If not already connected or different device connected, connect it
-        if (app_state["connected_device"] is None or
-                getattr(app_state["connected_device"], "device_id", None) != selected_device.device_id):
+        if (app_state["connected_device"] is None
+                or getattr(app_state["connected_device"], "device_id", None) != selected_device.device_id):
             try:
                 connected = PalmSecureDevice(selected_device.device_id)
                 connected.connect()
@@ -381,7 +406,9 @@ def device_status():
             "timestamp": time.time()
         }), 500
 
-#called on diagnostic page
+# called on diagnostic page
+
+
 @app.route("/api/diagnostics/run", methods=["GET"])
 def run_diagnostics():
     """Run full hardware and system diagnostics using DiagnosticsManager"""
@@ -411,17 +438,19 @@ def run_diagnostics():
 # -----------------------------------------------------------------------------
 # Registration / Auth
 # -----------------------------------------------------------------------------
-#Api for regestering new user
+# Api for regestering new user
+
+
 @app.route("/api/register_user", methods=["POST"])
 @limiter.limit("5/minute")
 def register_user():
     data = request.json or {}
     bio_id = (data.get("bio_id") or "").strip()  # This should be ENROLLMENT template
     username = (data.get("username") or "").strip()
-    email = (data.get("email") or "").strip() 
+    email = (data.get("email") or "").strip()
     phone = (data.get("phone") or "").strip()
     password = (data.get("password") or "").encode("utf-8")
-    
+
     if not all([bio_id, username, email, phone, password]):
         return jsonify({"error": "Missing fields"}), 400
 
@@ -433,7 +462,7 @@ def register_user():
     try:
         if session.query(User).filter_by(email=email).first():
             return jsonify({"error": "User with this email already exists."}), 400
-        
+
         if session.query(User).filter_by(username=username).first():
             return jsonify({"error": "User with this username already exists."}), 400
 
@@ -475,7 +504,9 @@ def register_user():
     finally:
         session.close()
 
-#Api for login with form inputs
+# Api for login with form inputs
+
+
 @app.route("/api/login", methods=["POST"])
 @limiter.limit("10/minute")
 def login():
@@ -520,7 +551,6 @@ def login():
         session.close()
 
 
-
 # -----------------------------------------------------------------------------
 # Error handlers
 # -----------------------------------------------------------------------------
@@ -528,6 +558,7 @@ def login():
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify({"error": "Endpoint not found", "message": str(e)}), 404
+
 
 @app.errorhandler(500)
 def server_error(e):
@@ -538,12 +569,14 @@ def server_error(e):
 # OTP functionality (keeping your existing implementation)
 # -----------------------------------------------------------------------------
 # Function to send otp on email
+
+
 def send_otp_email(to_email, otp):
     from_email = os.environ.get("SMTP_EMAIL")
     from_password = os.environ.get("SMTP_PASSWORD")
     subject = "Your OTP Code"
     body = f"Your OTP code is: {otp}"
-    
+
     if not from_email or not from_password:
         logger.warning("SMTP credentials not configured; skipping real email send.")
         return
@@ -564,52 +597,57 @@ def send_otp_email(to_email, otp):
     except Exception as e:
         logging.error(f"Email sending failed: {e}")
 
-#Route which generate otp and call above function to send otp on email
+# Route which generate otp and call above function to send otp on email
+
+
 @app.route("/api/send-otp/email", methods=["POST"])
 def send_otp_email_route():
     data = request.json or request.form or {}
     email = (data.get("email") or "").strip()
-    
+
     if not email:
         return jsonify({"status": "error", "message": "Email is required"}), 400
-    
+
     otp = str(random.randint(100000, 999999))
     expiry = datetime.datetime.now() + datetime.timedelta(minutes=5)
     otp_store[email] = {"otp": otp, "expiry": expiry}
-    
+
     logging.info(f"Generated OTP for {email}: {otp}")
     send_otp_email(email, otp)
     return jsonify({"status": "success", "message": "OTP sent successfully", "email": email})
 
 # Used to verify otp
+
+
 @app.route("/api/verify-otp", methods=["POST"])
 def verify_otp():
     data = request.json or request.form or {}
     otp = (data.get("otp") or "").strip()
     email = (data.get("email") or "").strip()
     phone = (data.get("phone") or "").strip()
-    
+
     if not otp:
         return jsonify({"status": "error", "message": "OTP is required"}), 400
-    
+
     key = email or phone
     if not key or key not in otp_store:
         return jsonify({"status": "error", "message": "No OTP sent to this user"}), 404
-    
+
     stored = otp_store.get(key)
     if datetime.datetime.now() > stored["expiry"]:
         otp_store.pop(key, None)
         return jsonify({"status": "error", "message": "OTP expired"}), 410
-    
+
     if stored["otp"] == otp:
         otp_store.pop(key, None)
         return jsonify({"status": "success", "message": "OTP verified"})
-    
+
     return jsonify({"status": "error", "message": "Invalid OTP"}), 401
 
 # -----------------------------------------------------------------------------
-# Cleanup & Entrypoint  
+# Cleanup & Entrypoint
 # -----------------------------------------------------------------------------
+
 
 @app.teardown_appcontext
 def cleanup(exception=None):
@@ -620,15 +658,16 @@ def cleanup(exception=None):
             logger.error(f"Error disconnecting device during cleanup: {str(e)}")
         app_state["connected_device"] = None
 
+
 if __name__ == "__main__":
     try:
         logger.info("🚀 Starting Enhanced Palm Vein Authentication System")
         logger.info("📊 Working Project Algorithm: ACTIVE")
         logger.info("✅ Proper Enrollment vs Authentication Template Separation")
-        
+
         init_db()
         socketio.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
-        
+
     except Exception as e:
         logger.error(f"Error starting app: {e}")
         sys.exit(1)
@@ -637,7 +676,7 @@ if __name__ == "__main__":
 # -------------------------------
 # Transaction Endpoints
 # -------------------------------
-#Add New Transaction
+# Add New Transaction
 @app.route("/api/transactions", methods=["POST"])
 def create_transaction():
     """Create a new transaction"""
@@ -681,6 +720,8 @@ def create_transaction():
         session.close()
 
 # Used to print all transactions
+
+
 @app.route("/api/transactions", methods=["GET"])
 def list_transactions():
     """Get all transactions"""
@@ -704,6 +745,8 @@ def list_transactions():
         session.close()
 
 # Used to fetch transaction by its id
+
+
 @app.route("/api/transactions/<string:txn_id>", methods=["GET"])
 def get_transaction(txn_id):
     """Get a single transaction by ID"""

@@ -9,6 +9,7 @@ if not SECRET_KEY:
         "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
     )
 
+
 def generate_token(user_data, expires_in=3600):
     payload = {
         "user": user_data,
@@ -16,6 +17,7 @@ def generate_token(user_data, expires_in=3600):
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
+
 
 def decode_token(token):
     try:
@@ -25,5 +27,3 @@ def decode_token(token):
         return "Token expired"
     except jwt.InvalidTokenError:
         return "Invalid token"
-    
-

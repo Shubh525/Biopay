@@ -1,6 +1,5 @@
 import requests
 import random
-import uuid
 
 API_BASE = "http://localhost:5000/api/transactions"
 
@@ -18,6 +17,7 @@ DESCRIPTIONS = [
     "Salary credit",
     "Refund processed"
 ]
+
 
 def insert_mock_transactions(n=5):
     for _ in range(n):

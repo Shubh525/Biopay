@@ -114,15 +114,15 @@ def run_diagnostics():
 
     if SIMULATE:
         return jsonify({
-            "usb_subsystem":    "OK",
-            "driver_status":    "OK",
-            "permissions":      "OK",
+            "usb_subsystem": "OK",
+            "driver_status": "OK",
+            "permissions": "OK",
             "device_detection": "OK",
-            "network":          "OK",
-            "devices_found":    1,
-            "ready":            True,
-            "message":          "Diagnostics clean. Device simulated and ready.",
-            "issues":           [],
+            "network": "OK",
+            "devices_found": 1,
+            "ready": True,
+            "message": "Diagnostics clean. Device simulated and ready.",
+            "issues": [],
         }), 200
 
     try:
@@ -132,15 +132,15 @@ def run_diagnostics():
         device_detect = results.get("device_detection", {})
 
         return jsonify({
-            "usb_subsystem":    results["usb_subsystem"].get("status"),
-            "driver_status":    results["drivers"].get("status"),
-            "permissions":      results["permissions"].get("status"),
+            "usb_subsystem": results["usb_subsystem"].get("status"),
+            "driver_status": results["drivers"].get("status"),
+            "permissions": results["permissions"].get("status"),
             "device_detection": results["device_detection"].get("status"),
-            "network":          results["network"].get("status"),
-            "devices_found":    device_detect.get("devices_found", 0),
-            "ready":            overall.get("ready", False),
-            "message":          overall.get("message"),
-            "issues":           overall.get("issues", []),
+            "network": results["network"].get("status"),
+            "devices_found": device_detect.get("devices_found", 0),
+            "ready": overall.get("ready", False),
+            "message": overall.get("message"),
+            "issues": overall.get("issues", []),
         }), 200
 
     except Exception as e:
