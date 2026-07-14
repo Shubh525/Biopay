@@ -1,2 +1,12 @@
 .vercel
 .env*
+
+# Original heavy image/video files (kept locally, but excluded from git)
+public/customers/*.jpg
+public/About-us/*.jpg
+public/contact-us/*.jpg
+src/assets/images/*.jpg
+src/assets/images/*.png
+src/assets/images/*.PNG
+src/assets/images/*.mp4
+src/assets/images/F

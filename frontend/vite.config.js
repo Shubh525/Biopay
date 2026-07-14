@@ -15,6 +15,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           motion: ['framer-motion'],
+          firebase: ['firebase/app', 'firebase/auth'],
         },
       },
     },
