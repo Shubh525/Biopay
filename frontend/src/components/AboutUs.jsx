@@ -87,7 +87,7 @@ export default function AboutUs() {
 
             <div className="hero-image">
               <img
-                src="/About-us/Connectbiopay-Fulcrum.jpg"
+                src="/About-us/biopay-Fulcrum.webp"
                 alt="Biometric payment technology"
                 className="hero-img"
                 loading="lazy"
