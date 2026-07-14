@@ -63,19 +63,19 @@ export default function AboutUs() {
         <div className="container">
           <div className="hero-content">
             <div className="hero-text">
-              <h2 className="animated-title">BioPay | Secure. Simple. Pay.</h2>
+              <h2 className="animated-title">Connectbiopay| Secure. Simple. Pay.</h2>
               <div className="animated-paragraph">
                 <p>
                   Redefining identity-driven payments through palm biometrics.
                 </p>
                 <p>
-                  BioPay is a next-gen biometric payment platform that enables
+                  Connectbiopay is a next-gen biometric payment platform that enables
                   secure, contactless transactions using only your palm—no
                   cards, no phones, no passwords.
                 </p>
                 <p>
                   Built with enterprise-grade security and cutting-edge AI,
-                  BioPay replaces traditional authentication with
+                  Connectbiopay replaces traditional authentication with
                   liveness-verified palm biometric verification. At the point of
                   payment, users simply scan their palm. Our advanced system
                   confirms identity using sophisticated palm pattern
@@ -87,7 +87,7 @@ export default function AboutUs() {
 
             <div className="hero-image">
               <img
-                src="/About-us/biopay-Fulcrum.jpg"
+                src="/About-us/Connectbiopay-Fulcrum.jpg"
                 alt="Biometric payment technology"
                 className="hero-img"
                 loading="lazy"
@@ -125,14 +125,14 @@ export default function AboutUs() {
             <div className="founder-text">
               <p>
                 "As a first-year student at UPES with a passion for fintech
-                innovation, I founded ConnectBioPay to revolutionize how we
+                innovation, I founded Connectbiopay to revolutionize how we
                 think about payment security and accessibility."
               </p>
               <p>
                 Hailing from Gwalior, Madhya Pradesh, I combine fresh academic
                 perspectives with entrepreneurial drive to build payment
                 solutions that are both cutting-edge and user-friendly. My
-                vision for BioPay merges technical innovation with practical
+                vision for  merges technical innovation with practical
                 application, creating a system where your unique biometric
                 identity becomes your most secure financial tool.
               </p>

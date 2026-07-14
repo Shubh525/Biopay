@@ -126,7 +126,7 @@ export const Home = () => {
               }}
             >
               <motion.h1 className="homepage-heading glow-text-animated">
-                {["Begin your", "Biopay", "Journey today."].map((text, idx) => (
+                {["Begin your", "Connectbiopay", "Journey today."].map((text, idx) => (
                   <motion.span
                     key={idx}
                     className={`font-${idx + 1}`}

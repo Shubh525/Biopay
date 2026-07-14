@@ -59,7 +59,7 @@ function ScrollingCustomers() {
   return (
     <div className="scroll-container">
       <h2 className="heading">
-        Biopay grows with <span className="highlight">you!</span>
+        Connectbiopay grows with <span className="highlight">you!</span>
       </h2>
       <p className="subheading">2,50,000+ Businesses</p>
 

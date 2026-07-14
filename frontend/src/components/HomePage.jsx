@@ -36,7 +36,7 @@ function HomePage() {
         >
           <img
             src="/images/front.png"
-            alt="BioPay Homepage Illustration"
+            alt="Connectbiopay Homepage Illustration"
             className="front-image"
             loading="lazy"
             decoding="async"
@@ -72,14 +72,14 @@ function HomePage() {
         >
           <h1 className="homepage-heading">
             Begin your<br />
-            <span className="highlight-green">BioPay</span><br />
+            <span className="highlight-green">ConnectbioPay</span><br />
             Journey today
           </h1>
 
           <motion.button
             type="button"
             className="homepage-button"
-            aria-label="Start BioPay Journey"
+            aria-label="Start ConnectbioPay Journey"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleClick}
