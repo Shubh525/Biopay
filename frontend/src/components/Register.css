@@ -134,65 +134,7 @@
 .register-link a:hover {
   text-decoration: underline;
 }
-/* === BioID Wrapper === */
-.bioid-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
 
-.bioid-wrapper input {
-  flex: 1;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.85);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-/* === Scan Button === */
-/* === BioID Wrapper (Fixed for Clickability) === */
-.bioid-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bioid-wrapper input {
-  flex: 1;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.85);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  z-index: 1;
-}
-
-/* === Scan Button (Clickable + Styled) === */
-.btn-scan {
-  padding: 10px 14px;
-  background-color: #ffffff;
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-  z-index: 2; /* ensure button sits above input */
-}
-
-.btn-scan:hover {
-  background-color: #e5e5e5;
-}
-
-.btn-scan:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
 
 
 /* === Headings === */

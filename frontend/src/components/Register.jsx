@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import loginVideo from '../assets/images/login.mp4'; // Background video
 import './Register.css';
 import API_BASE from '../api.js';
 
@@ -10,72 +9,24 @@ export const Register = () => {
   const [number, setNumber] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [bioId, setBioId] = useState('');
-  const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const isMounted = useRef(true);
-  const scanControllerRef = useRef(null);
   const submitControllerRef = useRef(null);
 
   useEffect(() => {
     return () => {
       isMounted.current = false;
-      scanControllerRef.current?.abort();
       submitControllerRef.current?.abort();
     };
   }, []);
-
-  // 🖐 Scan Palm Vein
-  const handleScanBioId = async () => {
-    if (scanning) return;
-
-    scanControllerRef.current = new AbortController();
-
-    try {
-      setScanning(true);
-      const res = await axios.get(`${API_BASE}/api/scan_bio_id`, {
-        timeout: 10000,
-        signal: scanControllerRef.current.signal
-      });
-      if (
-        isMounted.current &&
-        res.data?.bio_id_base64
-      ) {
-        setBioId(res.data.bio_id_base64);
-        alert('✅ Palm vein captured successfully!');
-      } else if (isMounted.current) {
-        alert('Failed to capture palm vein. Please try again.');
-      }
-    } catch (err) {
-      if (
-        axios.isCancel(err) ||
-        err.code === 'ERR_CANCELED'
-      ) {
-        return;
-      }
-
-      if (isMounted.current) {
-        console.error('Scan error:', err);
-        alert(err.response?.data?.error || 'Error capturing biometric data.');
-      }
-    } finally {
-      if (isMounted.current) {
-        setScanning(false);
-      }
-    }
-  };
 
   // 📝 Submit Form
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (loading) return;
-    if (!bioId) {
-      alert('Please scan or enter your palm vein ID before registering!');
-      return;
-    }
 
     submitControllerRef.current = new AbortController();
     setLoading(true);
@@ -83,7 +34,6 @@ export const Register = () => {
     axios.post(
       `${API_BASE}/api/register_user`,
       {
-        bio_id: bioId.trim(),
         username: name.trim(),
         email: email.trim(),
         phone: number.trim(),
@@ -108,7 +58,6 @@ export const Register = () => {
           setEmail('');
           setNumber('');
           setPassword('');
-          setBioId('');
           
           navigate('/login');
         }
@@ -147,7 +96,7 @@ export const Register = () => {
           console.error('Register video failed to load', e);
         }}
       >
-        <source src={loginVideo} type="video/mp4" />
+        <source src="/videos/login.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
@@ -228,34 +177,7 @@ export const Register = () => {
               </div>
             </div>
 
-            {/* 👇 Bio ID Input + Scan Button */}
-            <div className="form-group">
-              <label>Palm Vein Bio ID</label>
-              <div className="bioid-wrapper">
-                <input
-                  type="text"
-                  value={bioId}
-                  onChange={(e) => setBioId(e.target.value.trimStart())}
-                  onBlur={(e) => setBioId(e.target.value.trim())}
-                  placeholder="Enter or scan palm vein ID"
-                  spellCheck="false"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  required
-                />
-                <button
-                  type="button"
-                  className="btn-scan"
-                  onClick={handleScanBioId}
-                  disabled={scanning || loading}
-                  aria-busy={scanning}
-                >
-                  {scanning ? 'Scanning...' : 'Scan Palm Vein'}
-                </button>
-              </div>
-            </div>
-
-            <button type="submit" className="btn-primary" disabled={loading || scanning} aria-busy={loading}>
+            <button type="submit" className="btn-primary" disabled={loading} aria-busy={loading}>
               {loading ? 'Registering...' : 'Register'}
             </button>
             
