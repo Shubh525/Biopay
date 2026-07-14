@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import "./ContactUs.css";
-import teamPhoto from "../assets/images/17263.jpg";
+import teamPhoto from "../assets/images/17263.webp";
 
 export default function ContactUs() {
   const [isVisible, setIsVisible] = useState({
