@@ -608,27 +608,27 @@ def check_compatibility() -> Dict[str, Any]:
         'python_compatible': True,
         'message': 'System is compatible',
     }
-    
+
     # Check operating system
     os_name = platform.system()
     result['os'] = os_name
-    
+
     if os_name not in ('Windows', 'Linux'):
         result['status'] = 'ERROR'
         result['os_supported'] = False
         result['message'] = f"Unsupported operating system: {os_name}"
         return result
-    
+
     # Check Python version
     python_version = platform.python_version_tuple()
     result['python_version'] = '.'.join(python_version)
-    
+
     if int(python_version[0]) < 3 or (int(python_version[0]) == 3 and int(python_version[1]) < 6):
         result['status'] = 'ERROR'
         result['python_compatible'] = False
         result['message'] = f"Unsupported Python version: {result['python_version']}. Python 3.6 or higher is required."
         return result
-    
+
     # Check if the driver is installed and compatible
     is_installed, driver_version = is_driver_installed()
     result['driver_installed'] = is_installed
