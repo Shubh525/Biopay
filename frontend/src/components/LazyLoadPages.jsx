@@ -1,6 +1,10 @@
 import { lazy } from "react";
 
-const Home = lazy(() => import("./Home"));
+const Home = lazy(() =>
+    import("./Home").then((module) => ({
+        default: module.Home,
+    }))
+);
 const DeviceDetails = lazy(() => import("./DeviceDetails"));
 const AboutUs = lazy(() => import("./AboutUs"));
 const Diagnostic = lazy(() => import("./Diagnostic"));

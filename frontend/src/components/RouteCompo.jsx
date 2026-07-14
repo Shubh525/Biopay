@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -6,39 +7,62 @@ import {
 
 import Layout from "../Layout";
 import PageNotFound from "./PageNotFound";
-import { Home } from "./Home";
-import DeviceDetails from "./DeviceDetails";
-import AboutUs from "./AboutUs";
-import Diagnostic from "./Diagnostic";
-import Login from "./Login";
-import { Register } from "./Register";
-import HomePage from "./HomePage";
-import ContactUs from "./ContactUs";
-import Services from "./Services";
-import Work from "./Work";
 import RouteProtection from "./RouteProtection";
+
+// Lazy-loaded page components — each page loads only when navigated to
+import {
+  Home,
+  DeviceDetails,
+  AboutUs,
+  Diagnostic,
+  Login,
+  Register,
+  HomePage,
+  ContactUs,
+  Services,
+  Work,
+} from './LazyLoadPages';
+
+// Minimal loading fallback
+const PageLoader = () => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    color: '#888',
+    fontSize: '1rem',
+  }}>
+    Loading&hellip;
+  </div>
+);
+
+// Helper to wrap lazy components with Suspense
+const Lazy = ({ children }) => (
+  <Suspense fallback={<PageLoader />}>{children}</Suspense>
+);
 
 export const RouteCompo = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       {/* Default Route */}
-      <Route index element={<Home />} />
+      <Route index element={<Lazy><Home /></Lazy>} />
 
       {/* Main Routes */}
-      <Route path="home" element={<Home />} />
-      <Route path="homepage" element={<HomePage />} />
+      <Route path="home" element={<Lazy><Home /></Lazy>} />
+      <Route path="homepage" element={<Lazy><HomePage /></Lazy>} />
       <Route element={<RouteProtection />}>
-        <Route path="device-details" element={<DeviceDetails />} />
-        <Route path="diagnostic" element={<Diagnostic />} />
+        <Route path="device-details" element={<Lazy><DeviceDetails /></Lazy>} />
+        <Route path="diagnostic" element={<Lazy><Diagnostic /></Lazy>} />
       </Route>
-      <Route path="about-us" element={<AboutUs />} />
-      <Route path="contact-us" element={<ContactUs />} />
-      <Route path="services" element={<Services />} />
-      <Route path="work" element={<Work />} />
+      <Route path="about-us" element={<Lazy><AboutUs /></Lazy>} />
+      <Route path="contact-us" element={<Lazy><ContactUs /></Lazy>} />
+      <Route path="services" element={<Lazy><Services /></Lazy>} />
+      <Route path="work" element={<Lazy><Work /></Lazy>} />
 
       {/* Auth Routes */}
-      <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
+      <Route path="login" element={<Lazy><Login /></Lazy>} />
+      <Route path="register" element={<Lazy><Register /></Lazy>} />
 
       {/* 404 Route */}
       <Route path="*" element={<PageNotFound />} />
