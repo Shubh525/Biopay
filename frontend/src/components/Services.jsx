@@ -1,6 +1,5 @@
 import React, { memo } from "react";
 import "./Services.css";
-import bgVideo from "../assets/images/login.mp4";
 
 const Services = () => {
   return (
@@ -21,7 +20,7 @@ const Services = () => {
           }
         }}
       >
-        <source src={bgVideo} type="video/mp4" />
+        <source src="/videos/login.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
