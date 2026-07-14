@@ -113,7 +113,7 @@ function Footer() {
   state={{ scrollToTop: true }}
   className="cta-button"
 >
-  Get started →
+  Get started&nbsp;&nbsp;→
 </Link>
       </div>
 
