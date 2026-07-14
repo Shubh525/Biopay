@@ -1,12 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "./AuthContext";
-import axios from 'axios';
 import './Home.css';
 
-import homeImage from '../assets/images/home1.png';
-import thumbVideo from '../assets/images/thumbok.mp4';
-import backleft from '../assets/images/backleft.mp4';
+import homeImage from '../assets/images/home1.webp';
 
 import MagneticButton from './MagneticButton';
 import NoAnimation from './NoAnimation';
@@ -21,68 +18,8 @@ export const Home = () => {
     navigate('/login');
   }, [navigate]);
 
-  const [isPageReady, setIsPageReady] = useState(false);
-  const { isLoggedIn, setIsLoggedIn, handleLogout } = useAuth();
-  const pageReadyTimer = useRef(null);
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const token = localStorage.getItem('token');
-
-    if (token) {
-      axios.get(
-        '/routes/home',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          signal: controller.signal,
-          timeout: 5000,
-        }
-      )
-        .then(() => {
-          if (controller.signal.aborted) return;
-
-          setIsLoggedIn(true);
-
-          pageReadyTimer.current = setTimeout(() => {
-            if (!controller.signal.aborted) {
-              setIsPageReady(true);
-            }
-          }, 200);
-        })
-        .catch((err) => {
-          if (
-            axios.isCancel(err) ||
-            err.code === "ERR_CANCELED"
-          ) {
-            return;
-          }
-
-          console.error("Home API Error:", err);
-
-          localStorage.removeItem('token');
-          setIsLoggedIn(false);
-          setIsPageReady(true);
-        });
-    } else {
-      setIsPageReady(true);
-    }
-
-    // ADD THIS PART
-    return () => {
-      controller.abort();
-
-      if (pageReadyTimer.current) {
-        clearTimeout(pageReadyTimer.current);
-      }
-    };
-
-  }, [setIsLoggedIn]);
-
-
-
-  if (!isPageReady) return <div className="homepage-container" style={{ opacity: 0 }} />;
+  // Trust AuthContext for login state — no duplicate API call needed
+  const { isLoggedIn, handleLogout } = useAuth();
 
   return (
     <AnimatePresence>
@@ -97,12 +34,13 @@ export const Home = () => {
         <div className="hero-section">
           <video
             className="hero-video-bg"
-            src={thumbVideo}
+            src="/videos/thumbok.mp4"
             autoPlay
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="none"
+            poster=""
             onError={(e) => {
               console.error("Hero video failed to load", e);
             }}
@@ -172,12 +110,13 @@ export const Home = () => {
           <div className="left-pane">
             <video
               className="left-pane-bg-video"
-              src={backleft}
+              src="/videos/backleft.mp4"
               autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="none"
+              poster=""
               onError={(e) => {
                 console.error("Left video failed to load", e);
               }}
