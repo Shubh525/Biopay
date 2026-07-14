@@ -167,9 +167,11 @@ def validate_bio(current_user):
     if not auth_feature:
         return jsonify({"match": False, "error": "Authentication feature required"}), 400
 
-    if len(auth_feature) < 100 or not auth_feature.replace("=", "").replace("+", "").replace("/", "").isalnum():
-        logger.warning(f"Invalid auth feature format: {auth_feature[:20]}...")
-        return jsonify({"match": False, "verdict": "INVALID_TEMPLATE"}), 400
+    # Only enforce high-quality template checks if we are NOT in simulation mode
+    if not SIMULATE:
+        if len(auth_feature) < 100 or not auth_feature.replace("=", "").replace("+", "").replace("/", "").isalnum():
+            logger.warning(f"Invalid auth feature format: {auth_feature[:20]}...")
+            return jsonify({"match": False, "verdict": "INVALID_TEMPLATE"}), 400
 
     if any(fake in auth_feature.upper() for fake in ["FAKE", "TEST", "MOCK", "DUMMY"]):
         logger.warning(f"Fake auth feature detected: {auth_feature[:20]}...")
@@ -180,6 +182,22 @@ def validate_bio(current_user):
         users = session.query(User).all()
         if not users:
             return jsonify({"match": False, "verdict": "NO_USERS"}), 404
+
+        # If in simulation mode, return a successful mock match for the first user
+        if SIMULATE:
+            user = users[0]
+            token = generate_token({"username": user.username, "email": user.email})
+            logger.info(f"[SIMULATED MATCH] Matched first user: {user.username}")
+            return jsonify({
+                "match": True,
+                "verdict": "SIMULATED_MATCH",
+                "user": {
+                    "username": user.username,
+                    "email": user.email,
+                    "phone": user.phone,
+                },
+                "token": token,
+            }), 200
 
         for user in users:
             try:

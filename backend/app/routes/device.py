@@ -26,8 +26,25 @@ _app_state = {
 @device_bp.route("/api/device/status", methods=["GET"])
 def device_status():
     """Real-time detection of Palm Vein Scanner status."""
+    import os
+    SIMULATE = os.getenv("SIMULATE", "false").lower() == "true"
+
+    if SIMULATE:
+        return jsonify({
+            "name": "Fujitsu PalmSecure F Pro (Simulated)",
+            "id": "SIM-DEV-12345",
+            "firmware": "1.0.0-sim",
+            "connected": True,
+            "timestamp": time.time(),
+        })
+
     try:
-        devices = find_devices()
+        try:
+            devices = find_devices()
+        except Exception as e:
+            logger.warning(f"Error calling find_devices: {e}")
+            devices = []
+
         _app_state["devices"] = devices
         _app_state["last_refresh"] = time.time()
 
@@ -43,20 +60,24 @@ def device_status():
 
         selected = devices[0]
 
+        # selected can be a dict (from find_devices) or device object
+        selected_id = getattr(selected, "device_id", None) or selected.get("device_id") or selected.get("serial_number")
+        selected_name = getattr(selected, "device_name", None) or selected.get("device_name") or selected.get("product") or "PalmSecure Sensor"
+
         if (
             _app_state["connected_device"] is None
-            or getattr(_app_state["connected_device"], "device_id", None) != selected.device_id
+            or getattr(_app_state["connected_device"], "device_id", None) != selected_id
         ):
             try:
-                connected = PalmSecureDevice(selected.device_id)
+                connected = PalmSecureDevice(selected_id)
                 connected.connect()
                 _app_state["connected_device"] = connected
-                logger.info(f"Connected to device {connected.device_id}")
+                logger.info(f"Connected to device {selected_id}")
             except Exception as e:
                 logger.error(f"Failed to connect device: {e}")
                 return jsonify({
-                    "name": selected.device_name,
-                    "id": selected.device_id,
+                    "name": selected_name,
+                    "id": selected_id,
                     "firmware": "—",
                     "connected": False,
                     "error": str(e),
@@ -88,6 +109,22 @@ def device_status():
 @device_bp.route("/api/diagnostics/run", methods=["GET"])
 def run_diagnostics():
     """Run full hardware and system diagnostics."""
+    import os
+    SIMULATE = os.getenv("SIMULATE", "false").lower() == "true"
+
+    if SIMULATE:
+        return jsonify({
+            "usb_subsystem":    "OK",
+            "driver_status":    "OK",
+            "permissions":      "OK",
+            "device_detection": "OK",
+            "network":          "OK",
+            "devices_found":    1,
+            "ready":            True,
+            "message":          "Diagnostics clean. Device simulated and ready.",
+            "issues":           [],
+        }), 200
+
     try:
         diag = DiagnosticsManager()
         results = diag.run_all_diagnostics()
