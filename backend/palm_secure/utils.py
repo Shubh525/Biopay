@@ -633,16 +633,16 @@ def check_compatibility() -> Dict[str, Any]:
     is_installed, driver_version = is_driver_installed()
     result['driver_installed'] = is_installed
     result['driver_version'] = driver_version
-    
+
     if not is_installed:
         result['status'] = 'ERROR'
         result['driver_compatible'] = False
         result['message'] = "PalmSecure driver not installed"
-    
+
     # Check if running as admin/root
     result['is_admin'] = is_admin()
     if not result['is_admin'] and os_name == 'Windows':
         result['status'] = 'WARNING'
         result['message'] = "Not running as administrator. Some functions may be limited."
-    
+
     return result
