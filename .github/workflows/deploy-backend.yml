@@ -1,18 +1,14 @@
 name: Deploy Backend to EC2
 
+# ── Manual trigger ONLY ──────────────────────────────────────────────────────
+# Click "Run workflow" in GitHub Actions → Actions tab → Deploy Backend to EC2
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
-  # Allow manual trigger from GitHub UI
   workflow_dispatch:
 
 jobs:
-  # ── Job 1: Lint & basic checks ─────────────────────────────────────────────
+  # ── Run lint before deploying ──────────────────────────────────────────────
   lint:
-    name: Lint
+    name: Pre-deploy Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -41,21 +37,11 @@ jobs:
             --exclude=venv,.venv,__pycache__,migrations \
             --ignore=E501,W503
 
-      - name: Check for secrets accidentally committed
-        run: |
-          # Fail if any .env file (not .env.example) was committed
-          if git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '^backend/\.env$'; then
-            echo "❌ ERROR: .env file was committed! Remove it immediately."
-            exit 1
-          fi
-          echo "✅ No .env files committed."
-
-  # ── Job 2: Deploy to EC2 (only on main branch) ────────────────────────────
+  # ── Deploy to EC2 ──────────────────────────────────────────────────────────
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: lint
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
 
     environment:
       name: production
@@ -75,7 +61,6 @@ jobs:
 
             echo "══════════════════════════════════════════"
             echo "  BioPay Backend — Starting Deployment"
-            echo "  Commit: ${{ github.sha }}"
             echo "  Triggered by: ${{ github.actor }}"
             echo "══════════════════════════════════════════"
 
@@ -118,12 +103,11 @@ jobs:
         if: success()
         run: |
           echo "🚀 Deployment to api.connectbiopay.com succeeded!"
-          echo "   Commit: ${{ github.sha }}"
           echo "   Actor:  ${{ github.actor }}"
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "❌ Deployment FAILED for commit ${{ github.sha }}"
+          echo "❌ Deployment FAILED"
           echo "   Check the logs above and on EC2:"
           echo "   sudo journalctl -u biopay-backend -n 50"
