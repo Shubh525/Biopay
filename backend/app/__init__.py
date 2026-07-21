@@ -46,7 +46,11 @@ def create_app() -> Flask:
     # ── CORS — single source of truth ────────────────────────────────────────
     allowed_origins = [
         os.environ.get("FRONTEND_URL", "http://localhost:5173"),
-        "http://127.0.0.1:5173", "https://frontend-one-phi-jadkuggwa3.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://connectbiopay.com",
+        "https://www.connectbiopay.com",
+        "https://frontend-one-phi-jadkuggwa3.vercel.app",
     ]
     CORS(
         app,
