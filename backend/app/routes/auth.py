@@ -4,6 +4,7 @@ Auth Blueprint — /api/register_user, /api/login, /api/login/verify-otp,
 """
 
 import logging
+import re
 import bcrypt
 from flask import Blueprint, request, jsonify
 
@@ -26,17 +27,24 @@ encryption_layer = PalmVeinPaymentEncryption()
 # TODO: Replace with Redis for multi-worker safety
 _pending_logins: dict = {}
 
+# Pending signups awaiting phone OTP: { 10-digit-phone → {username, email, phone} }
+_pending_registrations: dict = {}
+
 
 # ── Register ──────────────────────────────────────────────────────────────────
 
 @auth_bp.route("/api/register_user", methods=["POST"])
 @limiter.limit("5/minute")
 def register_user():
-    """Register a new user — palm vein enrollment happens separately after registration."""
+    """
+    Register a new user.
+    Saves to DB, then returns otp_required=True so the frontend
+    triggers Firebase Phone OTP verification before logging the user in.
+    """
     data = request.json or {}
     username = (data.get("username") or "").strip()
-    email = (data.get("email") or "").strip()
-    phone = (data.get("phone") or "").strip()
+    email    = (data.get("email")    or "").strip()
+    phone    = (data.get("phone")    or "").strip()
     password = (data.get("password") or "").encode("utf-8")
 
     if not all([username, email, phone, password]):
@@ -49,6 +57,9 @@ def register_user():
 
         if session.query(User).filter_by(username=username).first():
             return jsonify({"error": "User with this username already exists."}), 400
+
+        if session.query(User).filter_by(phone=phone).first():
+            return jsonify({"error": "User with this phone number already exists."}), 400
 
         import uuid
         password_hash = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12)).decode("utf-8")
@@ -65,14 +76,22 @@ def register_user():
         session.add(user)
         session.commit()
 
-        token = generate_token({"username": username, "email": email, "registration": "standard"})
+        # Store pending registration — JWT issued only after OTP verification
+        _pending_registrations[phone] = {
+            "username": username,
+            "email": email,
+            "phone": phone,
+        }
 
-        logger.info(f"USER REGISTERED: {username} ({email})")
+        # Return full E.164 phone for Firebase (default +91 for 10-digit numbers)
+        e164_phone = phone if phone.startswith("+") else f"+91{phone}"
+
+        logger.info(f"USER REGISTERED (awaiting OTP): {username} ({email})")
         return jsonify({
-            "message": "User registered successfully",
-            "user_id": user.id,
-            "token": token,
-        }), 201
+            "otp_required": True,
+            "phone": e164_phone,
+            "message": "OTP sent to your registered phone number",
+        }), 200
 
     except Exception as e:
         session.rollback()
@@ -80,6 +99,58 @@ def register_user():
         return jsonify({"error": "Registration failed"}), 500
     finally:
         session.close()
+
+
+# ── Register (Step 2 — OTP Verified → Issue JWT) ──────────────────────────────
+
+@auth_bp.route("/api/register_user/verify-otp", methods=["POST"])
+@limiter.limit("10/minute")
+def register_verify_otp():
+    """
+    Called after Firebase Phone OTP is confirmed on the frontend.
+    Issues a JWT to auto-login the newly registered user.
+    """
+    data       = request.json or {}
+    phone_full = (data.get("phone") or "").strip()
+    email      = (data.get("email") or "").strip()
+
+    if not phone_full:
+        return jsonify({"error": "Phone number required"}), 400
+
+    # Extract the 10-digit number (strip country code prefix)
+    phone_digits = re.sub(r"\D", "", phone_full)
+    phone_10     = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
+
+    # 1. Try pending registrations store
+    pending = _pending_registrations.pop(phone_10, None)
+
+    # 2. Fallback: look up in DB directly (handles page refresh edge case)
+    if not pending:
+        session = SessionLocal()
+        try:
+            user = session.query(User).filter(
+                (User.phone == phone_10) | (User.email == email)
+            ).first()
+            if user:
+                pending = {
+                    "username": user.username,
+                    "email":    user.email,
+                    "phone":    user.phone,
+                }
+        finally:
+            session.close()
+
+    if not pending:
+        return jsonify({"error": "Registration session not found. Please register again."}), 401
+
+    token = generate_token({"username": pending["username"], "email": pending["email"]})
+    logger.info(f"REGISTRATION COMPLETE (OTP verified): {pending['username']}")
+
+    return jsonify({
+        "message": "Registration complete",
+        "token":   token,
+        "name":    pending["username"],
+    }), 200
 
 
 # ── Login (Step 1 — Password Check) ──────────────────────────────────────────
@@ -248,6 +319,58 @@ def google_login_verify_otp():
         "token": token,
         "name": pending["username"],
     }), 200
+
+
+# ── Forgot Password — Reset ──────────────────────────────────────────────────
+
+@auth_bp.route("/api/reset-password", methods=["POST"])
+@limiter.limit("5/minute")
+def reset_password():
+    """
+    Reset user password after Firebase Phone OTP has been verified on the frontend.
+    Accepts the full E.164 phone and the new plaintext password.
+    """
+    data         = request.json or {}
+    phone_full   = (data.get("phone")       or "").strip()
+    new_password = (data.get("newPassword") or "").strip()
+
+    if not phone_full or not new_password:
+        return jsonify({"error": "Phone and new password are required"}), 400
+
+    # Server-side password strength validation
+    if len(new_password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters"}), 400
+    if not re.search(r"[A-Z]", new_password):
+        return jsonify({"error": "Password must contain at least one uppercase letter"}), 400
+    if not re.search(r"[a-z]", new_password):
+        return jsonify({"error": "Password must contain at least one lowercase letter"}), 400
+    if not re.search(r"\d", new_password):
+        return jsonify({"error": "Password must contain at least one number"}), 400
+
+    # Extract 10-digit number for DB lookup (strip country code)
+    phone_digits = re.sub(r"\D", "", phone_full)
+    phone_10     = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
+
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter(User.phone == phone_10).first()
+        if not user:
+            return jsonify({"error": "No account found with this phone number"}), 404
+
+        user.password_hash = bcrypt.hashpw(
+            new_password.encode("utf-8"), bcrypt.gensalt(rounds=12)
+        ).decode("utf-8")
+        session.commit()
+
+        logger.info(f"PASSWORD RESET: {user.username} ({user.phone})")
+        return jsonify({"message": "Password reset successfully"}), 200
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Password reset failed: {e}")
+        return jsonify({"error": "Password reset failed"}), 500
+    finally:
+        session.close()
 
 
 # ── Bio Enrollment (post-registration) ───────────────────────────────────────

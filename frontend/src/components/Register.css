@@ -176,3 +176,164 @@ input {
     box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.2);
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INLINE ERROR BANNER
+═══════════════════════════════════════════════════════════════════════════ */
+
+.auth-error {
+  background: rgba(220, 38, 38, 0.14);
+  border: 1px solid rgba(220, 38, 38, 0.45);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  animation: regBannerIn 0.3s ease;
+  line-height: 1.4;
+}
+
+@keyframes regBannerIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PASSWORD TOGGLE BUTTON
+═══════════════════════════════════════════════════════════════════════════ */
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+  user-select: none;
+}
+
+.password-toggle:hover {
+  color: #000;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OTP STEP STYLES
+═══════════════════════════════════════════════════════════════════════════ */
+
+.otp-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.otp-phone-display {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 2px;
+}
+
+/* Large centered OTP input */
+.otp-input {
+  text-align: center;
+  font-size: 28px !important;
+  font-weight: 700;
+  letter-spacing: 12px;
+  padding: 14px 12px !important;
+  font-family: 'Courier New', monospace;
+  color: #000 !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 10px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+.otp-input::placeholder {
+  font-size: 22px;
+  letter-spacing: 8px;
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Verify button */
+.btn-verify {
+  margin-top: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-verify:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.btn-verify:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* OTP action row */
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 6px 12px;
+}
+
+.otp-resend-btn:hover:not(:disabled) {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.otp-resend-btn:disabled {
+  color: rgba(255, 255, 255, 0.35);
+  cursor: not-allowed;
+}
+
+.otp-back-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 20px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.otp-back-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
