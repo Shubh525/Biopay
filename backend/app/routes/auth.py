@@ -43,8 +43,8 @@ def register_user():
     """
     data = request.json or {}
     username = (data.get("username") or "").strip()
-    email    = (data.get("email")    or "").strip()
-    phone    = (data.get("phone")    or "").strip()
+    email = (data.get("email") or "").strip()
+    phone = (data.get("phone") or "").strip()
     password = (data.get("password") or "").encode("utf-8")
 
     if not all([username, email, phone, password]):
@@ -110,16 +110,16 @@ def register_verify_otp():
     Called after Firebase Phone OTP is confirmed on the frontend.
     Issues a JWT to auto-login the newly registered user.
     """
-    data       = request.json or {}
+    data = request.json or {}
     phone_full = (data.get("phone") or "").strip()
-    email      = (data.get("email") or "").strip()
+    email = (data.get("email") or "").strip()
 
     if not phone_full:
         return jsonify({"error": "Phone number required"}), 400
 
     # Extract the 10-digit number (strip country code prefix)
     phone_digits = re.sub(r"\D", "", phone_full)
-    phone_10     = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
+    phone_10 = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
 
     # 1. Try pending registrations store
     pending = _pending_registrations.pop(phone_10, None)
@@ -134,8 +134,8 @@ def register_verify_otp():
             if user:
                 pending = {
                     "username": user.username,
-                    "email":    user.email,
-                    "phone":    user.phone,
+                    "email": user.email,
+                    "phone": user.phone,
                 }
         finally:
             session.close()
@@ -148,8 +148,8 @@ def register_verify_otp():
 
     return jsonify({
         "message": "Registration complete",
-        "token":   token,
-        "name":    pending["username"],
+        "token": token,
+        "name": pending["username"],
     }), 200
 
 
@@ -330,8 +330,8 @@ def reset_password():
     Reset user password after Firebase Phone OTP has been verified on the frontend.
     Accepts the full E.164 phone and the new plaintext password.
     """
-    data         = request.json or {}
-    phone_full   = (data.get("phone")       or "").strip()
+    data = request.json or {}
+    phone_full = (data.get("phone") or "").strip()
     new_password = (data.get("newPassword") or "").strip()
 
     if not phone_full or not new_password:
@@ -349,7 +349,7 @@ def reset_password():
 
     # Extract 10-digit number for DB lookup (strip country code)
     phone_digits = re.sub(r"\D", "", phone_full)
-    phone_10     = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
+    phone_10 = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
 
     session = SessionLocal()
     try:
