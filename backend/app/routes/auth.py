@@ -153,14 +153,14 @@ def register_verify_otp():
     }), 200
 
 
-# ── Login (Step 1 — Password Check) ──────────────────────────────────────────
+# ── Login (Direct — Password → JWT) ──────────────────────────────────────────
 
 @auth_bp.route("/api/login", methods=["POST"])
 @limiter.limit("10/minute")
 def login():
-    """Step 1: Authenticate with email/phone + password. Returns OTP requirement."""
+    """Authenticate with email/phone + password. Issues JWT directly."""
     data = request.json or {}
-    identifier = (data.get("identifier") or "").strip()   # email or phone
+    identifier = (data.get("identifier") or "").strip()
     password = (data.get("password") or "").encode("utf-8")
 
     if not identifier or not password:
@@ -178,25 +178,13 @@ def login():
         if not bcrypt.checkpw(password, user.password_hash.encode("utf-8")):
             return jsonify({"msg": "incorrect password"}), 401
 
-        if not user.phone:
-            return jsonify({"msg": "No phone number on file. Please update your profile."}), 400
+        token = generate_token({"username": user.username, "email": user.email})
 
-        # Store pending login — OTP verification required
-        _pending_logins[identifier] = {
-            "username": user.username,
-            "email": user.email,
-            "phone": user.phone,
-        }
-
-        # Mask phone number for display: show last 4 digits
-        masked_phone = "●" * (len(user.phone) - 4) + user.phone[-4:]
-
-        logger.info(f"LOGIN STEP 1 PASSED: {user.username} — OTP required")
+        logger.info(f"LOGIN SUCCESS: {user.username}")
         return jsonify({
-            "otp_required": True,
-            "phone": user.phone,
-            "phone_masked": masked_phone,
-            "msg": "OTP verification required",
+            "message": "Login successful",
+            "token": token,
+            "name": user.username,
         }), 200
 
     except Exception as e:

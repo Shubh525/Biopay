@@ -149,13 +149,17 @@ const Login = () => {
         return;
       }
 
-      if (data.otp_required) {
-        setPhoneMasked(data.phone_masked);
-        setPhoneRaw(data.phone);
-        const sent = await firebaseSendOtp(data.phone);
-        if (sent) setStep('otp');
+      // Direct login — backend now issues JWT without OTP
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('name', data.name);
+        setUserName(data.name);
+        setIsLoggedIn(true);
+        navigate('/home');
         return;
       }
+
+      setErrorMsg('Login failed. Please try again.');
 
     } catch (error) {
       console.error('Login failed', error);
