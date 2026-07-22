@@ -19,16 +19,22 @@ import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey:        import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:     import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  appId:         import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const analytics = getAnalytics(app);
+
+// getAnalytics throws on localhost (non-HTTPS). Only init in production.
+const analytics =
+  typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
+    ? getAnalytics(app)
+    : null;
 
 /**
  * Set up an invisible reCAPTCHA verifier on a given button element.
