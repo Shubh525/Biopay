@@ -52,14 +52,31 @@ def register_user():
 
     session = SessionLocal()
     try:
-        if session.query(User).filter_by(email=email).first():
+        # Only block on VERIFIED accounts — ghost records (is_phone_verified=False)
+        # from old code or incomplete OTP flows are silently replaced.
+        verified_email = session.query(User).filter_by(
+            email=email, is_phone_verified=True
+        ).first()
+        if verified_email:
             return jsonify({"error": "User with this email already exists."}), 400
 
-        if session.query(User).filter_by(username=username).first():
+        verified_username = session.query(User).filter_by(
+            username=username, is_phone_verified=True
+        ).first()
+        if verified_username:
             return jsonify({"error": "User with this username already exists."}), 400
 
-        if session.query(User).filter_by(phone=phone).first():
+        verified_phone = session.query(User).filter_by(
+            phone=phone, is_phone_verified=True
+        ).first()
+        if verified_phone:
             return jsonify({"error": "User with this phone number already exists."}), 400
+
+        # Delete any ghost records for this email/phone so they don't block the new insert
+        session.query(User).filter(
+            (User.email == email) | (User.phone == phone)
+        ).filter_by(is_phone_verified=False).delete(synchronize_session=False)
+        session.commit()
     finally:
         session.close()
 
@@ -130,6 +147,7 @@ def register_verify_otp():
             password_hash=pending["password_hash"],
             bio_id_hash=None,
             bio_id_encrypted=None,
+            is_phone_verified=True,   # OTP confirmed — this is a real verified user
         )
         session.add(user)
         session.commit()

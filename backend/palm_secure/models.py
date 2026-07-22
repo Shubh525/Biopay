@@ -1,7 +1,7 @@
 # models.py
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, Float, ForeignKey, Text
+from sqlalchemy import Column, String, DateTime, Float, ForeignKey, Text, Boolean
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -22,6 +22,10 @@ class User(Base):
     password_hash = Column(Text, nullable=False)
     bio_id_hash = Column(Text)
     bio_id_encrypted = Column(Text)
+    # Tracks whether the user completed phone OTP verification.
+    # False = ghost account (old code or incomplete registration).
+    # True  = fully verified user.
+    is_phone_verified = Column(Boolean, default=False, nullable=False, server_default='false')
 
 
 class ContactMessage(Base):
