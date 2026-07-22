@@ -337,3 +337,77 @@ input {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.4);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GOOGLE SIGN-IN
+═══════════════════════════════════════════════════════════════════════════ */
+
+.google-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.google-divider::before,
+.google-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.google-divider span {
+  padding: 0 12px;
+}
+
+.google-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease;
+  margin-bottom: 12px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.google-wrapper:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.google-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* The rendered Google button sits on top, transparent, full-size */
+#registerGoogleBtn {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#registerGoogleBtn > div,
+#registerGoogleBtn iframe {
+  width: 100% !important;
+  height: 100% !important;
+}

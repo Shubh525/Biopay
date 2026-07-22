@@ -30,11 +30,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// getAnalytics throws on localhost (non-HTTPS). Only init in production.
-const analytics =
-  typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
-    ? getAnalytics(app)
-    : null;
+// getAnalytics can throw on localhost AND in production (ad blockers, missing
+// measurementId, unsupported browsers). Always wrap so OTP imports never break.
+let analytics = null;
+try {
+  if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+    analytics = getAnalytics(app);
+  }
+} catch (e) {
+  console.warn('Firebase Analytics failed to initialize (non-critical):', e.message);
+}
 
 /**
  * Set up an invisible reCAPTCHA verifier on a given button element.

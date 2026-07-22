@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import './Register.css';
@@ -16,8 +16,8 @@ export const Register = () => {
   const [loading, setLoading]     = useState(false);
   const [errorMsg, setErrorMsg]   = useState('');
 
-  // ── OTP state ─────────────────────────────────────────────────────────────
-  const [step, setStep]                     = useState('form'); // 'form' | 'otp'
+  // ── OTP step state ─────────────────────────────────────────────────────────
+  const [step, setStep]                     = useState('form'); // 'form' | 'otp' | 'google-phone'
   const [otp, setOtp]                       = useState('');
   const [otpSending, setOtpSending]         = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -29,12 +29,128 @@ export const Register = () => {
   const isMounted = useRef(true);
   const submitControllerRef = useRef(null);
 
+  // ── Google state ──────────────────────────────────────────────────────────
+  const [googleEmail, setGoogleEmail]   = useState('');
+  const [googleId, setGoogleId]         = useState('');
+  const [googleName, setGoogleName]     = useState('');
+  const [googlePhone, setGooglePhone]   = useState('');
+
   useEffect(() => {
     return () => {
       isMounted.current = false;
       submitControllerRef.current?.abort();
     };
   }, []);
+
+  // ── Google Login handler ──────────────────────────────────────────────────
+  const handleGoogleResponse = useCallback(async (response) => {
+    const token = response?.credential;
+    if (!token) { setErrorMsg('Google sign-in failed'); return; }
+
+    let profile;
+    try {
+      profile = JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      setErrorMsg('Invalid Google token');
+      return;
+    }
+
+    const gEmail = profile.email;
+    const gId    = profile.sub;
+
+    try {
+      const res  = await axios.post(`${API_BASE}/api/google-login`, { email: gEmail, google_id: gId });
+      const data = res.data;
+
+      if (data.error === 'PHONE_REQUIRED') {
+        setGoogleEmail(gEmail);
+        setGoogleId(gId);
+        setGoogleName(data.name || profile.name || '');
+        setStep('google-phone');
+        return;
+      }
+
+      if (data.otp_required) {
+        // Existing user — send OTP and move to OTP step
+        setGoogleEmail(gEmail);
+        setRegisteredPhone(data.phone);
+        setupRecaptcha('register-recaptcha-container');
+        const result = await sendOtp(data.phone.startsWith('+') ? data.phone : `+91${data.phone}`);
+        setConfirmationResult(result);
+        setResendCooldown(30);
+        setStep('otp');
+        return;
+      }
+    } catch (err) {
+      if (err.response?.data?.error === 'NO_BIO_REGISTRATION') {
+        setErrorMsg('This Google account is not registered. Please fill in the form below.');
+      } else {
+        setErrorMsg('Google sign-in failed. Please try again.');
+      }
+    }
+  }, []);
+
+  // ── Google Login: submit phone ─────────────────────────────────────────────
+  const handleGooglePhoneSubmit = async (e) => {
+    e.preventDefault();
+    if (loading || !googlePhone.trim()) return;
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      const res  = await axios.post(`${API_BASE}/api/google-login`, {
+        email:     googleEmail,
+        google_id: googleId,
+        phone:     googlePhone.trim(),
+      });
+      const data = res.data;
+      if (data.otp_required) {
+        setRegisteredPhone(data.phone);
+        setupRecaptcha('register-recaptcha-container');
+        const result = await sendOtp(data.phone.startsWith('+') ? data.phone : `+91${data.phone}`);
+        setConfirmationResult(result);
+        setResendCooldown(30);
+        setStep('otp');
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || 'Failed to verify phone. Please try again.');
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
+  };
+
+  // ── Google SDK init ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google && step === 'form') {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        const btn = document.getElementById('registerGoogleBtn');
+        if (btn) {
+          btn.innerHTML = '';
+          window.google.accounts.id.renderButton(btn, {
+            type: 'standard', theme: 'outline', size: 'large', width: 380,
+          });
+        }
+      }
+    };
+
+    if (window.google) {
+      initGoogle();
+    } else {
+      const script = document.createElement('script');
+      script.src    = 'https://accounts.google.com/gsi/client';
+      script.async  = true;
+      script.defer  = true;
+      script.onload = initGoogle;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (window.google) window.google.accounts.id.cancel();
+    };
+  }, [handleGoogleResponse, step]);
 
   // ── Clear error on step change ────────────────────────────────────────────
   useEffect(() => { setErrorMsg(''); }, [step]);
@@ -276,6 +392,20 @@ export const Register = () => {
                   {(loading || otpSending) ? 'Sending OTP...' : 'Register'}
                 </button>
 
+                {/* Google Sign-In */}
+                <div className="google-divider">
+                  <span>or</span>
+                </div>
+                <div className="google-wrapper">
+                  <img
+                    className="google-icon"
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google sign in"
+                  />
+                  <span className="google-text">Continue with Google</span>
+                  <div id="registerGoogleBtn"></div>
+                </div>
+
                 <p className="register-link">
                   Already have an account? <Link to="/login">Login</Link>
                 </p>
@@ -339,6 +469,54 @@ export const Register = () => {
                     type="button"
                     className="otp-back-btn"
                     onClick={() => { setStep('form'); setOtp(''); }}
+                  >
+                    ← Back
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+
+          {/* ── STEP: Google Phone Entry ── */}
+          {step === 'google-phone' && (
+            <>
+              <h2 className="create-account-text">Phone Verification</h2>
+              <p className="otp-subtitle">
+                Hi {googleName || 'there'}! Enter your phone number to link with your Google account.
+              </p>
+
+              {errorMsg && <div className="auth-error">{errorMsg}</div>}
+
+              <form onSubmit={handleGooglePhoneSubmit}>
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={googlePhone}
+                    onChange={(e) => setGooglePhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="Enter 10-digit phone number"
+                    inputMode="numeric"
+                    pattern="[0-9]{10}"
+                    minLength={10}
+                    maxLength={10}
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary btn-verify"
+                  disabled={loading || googlePhone.length < 10}
+                >
+                  {loading ? 'Sending OTP...' : 'Send OTP'}
+                </button>
+
+                <div className="otp-actions">
+                  <button
+                    type="button"
+                    className="otp-back-btn"
+                    onClick={() => { setStep('form'); setGoogleEmail(''); setGoogleId(''); setGooglePhone(''); }}
                   >
                     ← Back
                   </button>

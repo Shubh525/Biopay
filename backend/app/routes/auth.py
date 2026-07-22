@@ -27,7 +27,7 @@ encryption_layer = PalmVeinPaymentEncryption()
 # TODO: Replace with Redis for multi-worker safety
 _pending_logins: dict = {}
 
-# Pending signups awaiting phone OTP: { 10-digit-phone → {username, email, phone} }
+# Pending signups awaiting phone OTP: { 10-digit-phone → {username, email, phone, password_hash} }
 _pending_registrations: dict = {}
 
 
@@ -37,9 +37,9 @@ _pending_registrations: dict = {}
 @limiter.limit("5/minute")
 def register_user():
     """
-    Register a new user.
-    Saves to DB, then returns otp_required=True so the frontend
-    triggers Firebase Phone OTP verification before logging the user in.
+    Step 1 of registration: validate fields and check for duplicates.
+    Does NOT write to DB yet — user is held in _pending_registrations.
+    The DB write only happens in /verify-otp after Firebase OTP is confirmed.
     """
     data = request.json or {}
     username = (data.get("username") or "").strip()
@@ -60,45 +60,27 @@ def register_user():
 
         if session.query(User).filter_by(phone=phone).first():
             return jsonify({"error": "User with this phone number already exists."}), 400
-
-        import uuid
-        password_hash = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12)).decode("utf-8")
-
-        user = User(
-            id=str(uuid.uuid4()),
-            username=username,
-            email=email,
-            phone=phone,
-            password_hash=password_hash,
-            bio_id_hash=None,
-            bio_id_encrypted=None,
-        )
-        session.add(user)
-        session.commit()
-
-        # Store pending registration — JWT issued only after OTP verification
-        _pending_registrations[phone] = {
-            "username": username,
-            "email": email,
-            "phone": phone,
-        }
-
-        # Return full E.164 phone for Firebase (default +91 for 10-digit numbers)
-        e164_phone = phone if phone.startswith("+") else f"+91{phone}"
-
-        logger.info(f"USER REGISTERED (awaiting OTP): {username} ({email})")
-        return jsonify({
-            "otp_required": True,
-            "phone": e164_phone,
-            "message": "OTP sent to your registered phone number",
-        }), 200
-
-    except Exception as e:
-        session.rollback()
-        logger.error(f"Registration failed: {e}")
-        return jsonify({"error": "Registration failed"}), 500
     finally:
         session.close()
+
+    # Hash password and store pending — DB write happens only after OTP is confirmed
+    password_hash = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12)).decode("utf-8")
+    _pending_registrations[phone] = {
+        "username": username,
+        "email": email,
+        "phone": phone,
+        "password_hash": password_hash,
+    }
+
+    # Return full E.164 phone for Firebase (default +91 for 10-digit numbers)
+    e164_phone = phone if phone.startswith("+") else f"+91{phone}"
+
+    logger.info(f"REGISTRATION PENDING (awaiting OTP): {username} ({email})")
+    return jsonify({
+        "otp_required": True,
+        "phone": e164_phone,
+        "message": "OTP sent to your registered phone number",
+    }), 200
 
 
 # ── Register (Step 2 — OTP Verified → Issue JWT) ──────────────────────────────
@@ -107,8 +89,9 @@ def register_user():
 @limiter.limit("10/minute")
 def register_verify_otp():
     """
-    Called after Firebase Phone OTP is confirmed on the frontend.
-    Issues a JWT to auto-login the newly registered user.
+    Step 2 of registration: called after Firebase Phone OTP is confirmed.
+    Only now is the user written to the DB and a JWT issued.
+    If the OTP was never confirmed, no user record is ever created.
     """
     data = request.json or {}
     phone_full = (data.get("phone") or "").strip()
@@ -121,36 +104,51 @@ def register_verify_otp():
     phone_digits = re.sub(r"\D", "", phone_full)
     phone_10 = phone_digits[-10:] if len(phone_digits) >= 10 else phone_digits
 
-    # 1. Try pending registrations store
+    # Retrieve the pending registration (must exist — no DB fallback allowed here)
     pending = _pending_registrations.pop(phone_10, None)
 
-    # 2. Fallback: look up in DB directly (handles page refresh edge case)
     if not pending:
-        session = SessionLocal()
-        try:
-            user = session.query(User).filter(
-                (User.phone == phone_10) | (User.email == email)
-            ).first()
-            if user:
-                pending = {
-                    "username": user.username,
-                    "email": user.email,
-                    "phone": user.phone,
-                }
-        finally:
-            session.close()
+        return jsonify({"error": "Registration session not found or already completed. Please register again."}), 401
 
-    if not pending:
-        return jsonify({"error": "Registration session not found. Please register again."}), 401
+    # OTP confirmed — now write the user to the DB
+    import uuid
+    session = SessionLocal()
+    try:
+        # Double-check no duplicate snuck in during the OTP window
+        if session.query(User).filter(
+            (User.email == pending["email"]) |
+            (User.phone == phone_10) |
+            (User.username == pending["username"])
+        ).first():
+            return jsonify({"error": "Account already exists. Please log in."}), 409
 
-    token = generate_token({"username": pending["username"], "email": pending["email"]})
-    logger.info(f"REGISTRATION COMPLETE (OTP verified): {pending['username']}")
+        user = User(
+            id=str(uuid.uuid4()),
+            username=pending["username"],
+            email=pending["email"],
+            phone=phone_10,
+            password_hash=pending["password_hash"],
+            bio_id_hash=None,
+            bio_id_encrypted=None,
+        )
+        session.add(user)
+        session.commit()
 
-    return jsonify({
-        "message": "Registration complete",
-        "token": token,
-        "name": pending["username"],
-    }), 200
+        token = generate_token({"username": pending["username"], "email": pending["email"]})
+        logger.info(f"REGISTRATION COMPLETE (OTP verified, user saved): {pending['username']}")
+
+        return jsonify({
+            "message": "Registration complete",
+            "token": token,
+            "name": pending["username"],
+        }), 200
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Failed to save user after OTP: {e}")
+        return jsonify({"error": "Registration failed during account creation."}), 500
+    finally:
+        session.close()
 
 
 # ── Login (Direct — Password → JWT) ──────────────────────────────────────────
