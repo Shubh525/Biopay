@@ -95,7 +95,6 @@ def register_verify_otp():
     """
     data = request.json or {}
     phone_full = (data.get("phone") or "").strip()
-    email = (data.get("email") or "").strip()
 
     if not phone_full:
         return jsonify({"error": "Phone number required"}), 400
@@ -115,11 +114,12 @@ def register_verify_otp():
     session = SessionLocal()
     try:
         # Double-check no duplicate snuck in during the OTP window
-        if session.query(User).filter(
-            (User.email == pending["email"]) |
-            (User.phone == phone_10) |
-            (User.username == pending["username"])
-        ).first():
+        existing = session.query(User).filter(
+            (User.email == pending["email"])
+            | (User.phone == phone_10)
+            | (User.username == pending["username"])
+        ).first()
+        if existing:
             return jsonify({"error": "Account already exists. Please log in."}), 409
 
         user = User(
