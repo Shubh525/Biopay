@@ -5,8 +5,8 @@ Creates and configures the Flask app.
 Import this module to get a fully wired app instance.
 """
 
-import eventlet
-eventlet.monkey_patch()
+import gevent.monkey
+gevent.monkey.patch_all()
 
 import os  # noqa: E402
 import logging  # noqa: E402
@@ -59,7 +59,7 @@ def create_app() -> Flask:
     )
 
     # ── Extensions ────────────────────────────────────────────────────────────
-    socketio.init_app(app, cors_allowed_origins=allowed_origins)
+    socketio.init_app(app, cors_allowed_origins=allowed_origins, async_mode='gevent')
     limiter.init_app(app)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
