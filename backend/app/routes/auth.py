@@ -277,14 +277,12 @@ def google_login():
             user.phone = phone
             session.commit()
 
-        # Store pending login for OTP verification
-        _pending_logins[email] = {
-            "username": user.username,
-            "email": user.email,
-            "phone": user.phone,
-        }
+        # NOTE: Do NOT use in-memory dict here — gunicorn multi-worker
+        # means the verify-otp request may hit a different worker.
+        # The OTP is confirmed on the frontend via Firebase; we just need
+        # the email to look up the user in the DB at verify time.
 
-        masked_phone = "●" * (len(user.phone) - 4) + user.phone[-4:]
+        masked_phone = "\u25cf" * (len(user.phone) - 4) + user.phone[-4:]
 
         return jsonify({
             "otp_required": True,
@@ -303,26 +301,34 @@ def google_login():
 @auth_bp.route("/api/google-login/verify-otp", methods=["POST"])
 @limiter.limit("10/minute")
 def google_login_verify_otp():
-    """After Firebase OTP verification for Google login, issue the JWT token."""
+    """
+    After Firebase OTP is confirmed on the frontend, issue a JWT.
+    We look the user up directly from the DB — no in-memory state needed.
+    Firebase already confirmed phone ownership; we just issue the token.
+    """
     data = request.json or {}
     email = (data.get("email") or "").strip()
 
     if not email:
         return jsonify({"error": "Missing email"}), 400
 
-    pending = _pending_logins.pop(email, None)
+    session = SessionLocal()
+    try:
+        user = session.query(User).filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found. Please register first."}), 404
 
-    if not pending:
-        return jsonify({"error": "No pending login found. Please try again."}), 401
+        token = generate_token({"username": user.username, "email": user.email})
+        logger.info(f"GOOGLE LOGIN SUCCESS (OTP verified): {user.username}")
 
-    token = generate_token({"username": pending["username"], "email": pending["email"]})
-    logger.info(f"GOOGLE LOGIN SUCCESS (OTP verified): {pending['username']}")
+        return jsonify({
+            "msg": "login successful",
+            "token": token,
+            "name": user.username,
+        }), 200
 
-    return jsonify({
-        "msg": "login successful",
-        "token": token,
-        "name": pending["username"],
-    }), 200
+    finally:
+        session.close()
 
 
 # ── Forgot Password — Reset ──────────────────────────────────────────────────
